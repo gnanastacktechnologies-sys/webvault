@@ -1,0 +1,19 @@
+{
+  "name": "webvault",
+  "version": "1.0.0",
+  "description": "Personal Website Manager & Secure Bookmark Vault",
+  "main": "backend/server.js",
+  "type": "module",
+  "scripts": {
+    "install-backend": "cd backend && npm install",
+    "start": "cd backend && npm start",
+    "build": "cd backend && npm install"
+  },
+  "keywords": [
+    "mern",
+    "webvault",
+    "bookmark-manager"
+  ],
+  "author": "Gnanasekaran",
+  "license": "ISC"
+}
