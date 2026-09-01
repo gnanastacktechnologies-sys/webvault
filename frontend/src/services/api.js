@@ -1,11 +1,16 @@
 import axios from 'axios';
 
-// Determine base URL dynamically based on the current window hostname for mobile device support
+// Determine base URL dynamically based on environment or current window hostname
 const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+  if (envUrl) {
     return envUrl;
   }
+  // Production fallback to Render backend
+  if (import.meta.env.PROD) {
+    return 'https://webvault-0ixp.onrender.com/api';
+  }
+  // Local development / mobile LAN fallback
   const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
   return `http://${hostname}:5000/api`;
 };
