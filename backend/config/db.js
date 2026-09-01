@@ -9,11 +9,12 @@ try {
 }
 
 const connectDB = async () => {
-  const primaryUri = process.env.MONGODB_URI;
+  const atlasUri = 'mongodb+srv://gnanastacktechnologies_db_user:leO9igKbda93gS4r@cluster0.rbdpeb4.mongodb.net/webvault?retryWrites=true&w=majority';
+  const primaryUri = process.env.MONGODB_URI || atlasUri;
   const localUri = 'mongodb://127.0.0.1:27017/webvault';
 
   try {
-    const conn = await mongoose.connect(primaryUri || localUri, {
+    const conn = await mongoose.connect(primaryUri, {
       serverSelectionTimeoutMS: 5000,
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
