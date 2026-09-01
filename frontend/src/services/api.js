@@ -1,8 +1,18 @@
 import axios from 'axios';
 
+// Determine base URL dynamically based on the current window hostname for mobile device support
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+    return envUrl;
+  }
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  return `http://${hostname}:5000/api`;
+};
+
 // Create axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },

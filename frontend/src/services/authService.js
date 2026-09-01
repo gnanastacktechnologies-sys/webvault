@@ -20,6 +20,37 @@ const authService = {
   logout: () => {
     localStorage.removeItem('token');
   },
+
+  // Request password reset OTP
+  requestPasswordResetOtp: async (email, newPassword, confirmPassword) => {
+    const response = await api.post('/auth/forgot-password/request-otp', {
+      email,
+      newPassword,
+      confirmPassword,
+    });
+    return response.data;
+  },
+
+  // Verify OTP and update password
+  verifyPasswordResetOtp: async (email, otp) => {
+    const response = await api.post('/auth/forgot-password/verify-otp', {
+      email,
+      otp,
+    });
+    return response.data;
+  },
+
+  // Update user profile
+  updateProfile: async (profileData) => {
+    const response = await api.put('/auth/profile', profileData);
+    return response.data;
+  },
+
+  // Create new user account
+  createUser: async (userData) => {
+    const response = await api.post('/auth/users', userData);
+    return response.data;
+  },
 };
 
 export default authService;

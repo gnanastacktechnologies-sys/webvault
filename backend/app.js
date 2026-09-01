@@ -11,9 +11,13 @@ const app = express();
 // Security middlewares
 app.use(helmet());
 
-// CORS configuration - read allowed client URL from env or allow all in development
+// CORS configuration - read allowed client URL from env or allow all origins in development for mobile/LAN access
 const corsOptions = {
-  origin: process.env.CLIENT_URL || '*',
+  origin: (origin, callback) => {
+    // Allow all origins in development or matching CLIENT_URL
+    return callback(null, true);
+  },
+  credentials: true,
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));

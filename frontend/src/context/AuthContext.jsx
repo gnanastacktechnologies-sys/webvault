@@ -64,6 +64,14 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
+  const updateProfile = async (profileData) => {
+    const res = await authService.updateProfile(profileData);
+    if (res.success && res.user) {
+      setUser((prev) => ({ ...prev, ...res.user }));
+    }
+    return res;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -73,6 +81,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         checkAuth,
+        updateProfile,
       }}
     >
       {children}

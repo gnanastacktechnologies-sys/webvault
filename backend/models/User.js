@@ -9,9 +9,27 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      default: 'admin@webvault.com',
+    },
     passwordHash: {
       type: String,
       required: [true, 'Password hash is required'],
+    },
+    resetOtp: {
+      type: String,
+      default: null,
+    },
+    resetOtpExpires: {
+      type: Date,
+      default: null,
+    },
+    pendingPasswordHash: {
+      type: String,
+      default: null,
     },
   },
   {

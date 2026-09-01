@@ -27,24 +27,34 @@ const seedDatabase = async () => {
 
     console.log('Seeding database...');
 
-    // 1. Seed Admin User
-    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'adminpassword';
+    // 1. Seed / Update Admin User
+    const adminUsername = process.env.ADMIN_USERNAME || 'Gnanasekaran';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'Gnana123@';
+    const adminEmail = process.env.EMAIL_FROM || 'gnanastacktechnologies@gmail.com';
 
-    const existingAdmin = await User.findOne({ username: adminUsername });
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(adminPassword, salt);
+
+    let existingAdmin = await User.findOne({ username: adminUsername });
+    if (!existingAdmin) {
+      existingAdmin = await User.findOne({});
+    }
 
     if (!existingAdmin) {
       console.log(`Creating Admin user: ${adminUsername}`);
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(adminPassword, salt);
-
       await User.create({
         username: adminUsername,
         passwordHash,
+        email: adminEmail,
       });
       console.log('Admin user created successfully.');
     } else {
-      console.log(`Admin user '${adminUsername}' already exists. Skipping.`);
+      console.log(`Updating Admin user credentials for: ${adminUsername}`);
+      existingAdmin.username = adminUsername;
+      existingAdmin.passwordHash = passwordHash;
+      existingAdmin.email = adminEmail;
+      await existingAdmin.save();
+      console.log('Admin user updated successfully.');
     }
 
     // 2. Seed Default Categories

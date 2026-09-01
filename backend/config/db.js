@@ -1,12 +1,33 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
+
+// Set public DNS resolvers for reliable MongoDB Atlas SRV record resolution
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {
+  // Ignore if custom DNS server override is restricted
+}
 
 const connectDB = async () => {
+  const primaryUri = process.env.MONGODB_URI;
+  const localUri = 'mongodb://127.0.0.1:27017/webvault';
+
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    const conn = await mongoose.connect(primaryUri || localUri, {
+      serverSelectionTimeoutMS: 5000,
+    });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`Database connection error: ${error.message}`);
-    process.exit(1);
+    console.warn(`Primary MongoDB connection failed (${error.message}). Attempting local MongoDB fallback...`);
+    try {
+      const conn = await mongoose.connect(localUri, {
+        serverSelectionTimeoutMS: 5000,
+      });
+      console.log(`MongoDB Connected (Local Fallback): ${conn.connection.host}`);
+    } catch (fallbackError) {
+      console.error(`Database connection error: ${fallbackError.message}`);
+      process.exit(1);
+    }
   }
 };
 
