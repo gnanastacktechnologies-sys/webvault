@@ -12,8 +12,9 @@ export const protect = async (req, res, next) => {
       // Extract token from Bearer <token>
       token = req.headers.authorization.split(' ')[1];
 
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // Verify token with fallback secret for cloud deployments
+      const jwtSecret = process.env.JWT_SECRET || 'webvaultsupersecretdashkeyjwt';
+      const decoded = jwt.verify(token, jwtSecret);
 
       // Get user from the token, exclude password hash
       req.user = await User.findById(decoded.id).select('-passwordHash');
