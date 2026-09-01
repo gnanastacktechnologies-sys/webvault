@@ -17,7 +17,13 @@ const copyDir = (src, dest) => {
 const routes = ['login', 'dashboard', 'categories', 'websites', 'favorites'];
 
 try {
-  const frontendDist = path.resolve('frontend/dist');
+  let frontendDist = path.resolve('frontend/dist');
+  if (!fs.existsSync(frontendDist) && fs.existsSync(path.resolve('dist'))) {
+    frontendDist = path.resolve('dist');
+  }
+
+  console.log('Postbuild using dist directory:', frontendDist);
+
   if (fs.existsSync(frontendDist)) {
     const indexPath = path.join(frontendDist, 'index.html');
     
@@ -33,9 +39,12 @@ try {
       }
     }
 
-    copyDir(frontendDist, path.resolve('dist'));
-    copyDir(frontendDist, path.resolve('public'));
+    const rootDir = fs.existsSync(path.resolve('frontend')) ? path.resolve('.') : path.resolve('..');
+    copyDir(frontendDist, path.join(rootDir, 'dist'));
+    copyDir(frontendDist, path.join(rootDir, 'public'));
     console.log('✅ Successfully generated static route entry points & synced assets for Vercel');
+  } else {
+    console.error('Postbuild warning: dist directory not found at', frontendDist);
   }
 } catch (e) {
   console.error('Postbuild copy warning:', e.message);
