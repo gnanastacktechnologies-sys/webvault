@@ -1,11 +1,14 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
   "framework": "vite",
-  "rewrites": [
+  "buildCommand": "cd frontend && npm install && npm run build && node ../scripts/postbuild.js",
+  "outputDirectory": "frontend/dist",
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "handle": "filesystem"
+    },
+    {
+      "src": "/.*",
+      "dest": "/index.html"
     }
   ]
 }
