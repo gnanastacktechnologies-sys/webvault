@@ -36,8 +36,9 @@ export const login = async (req, res, next) => {
       });
     }
 
-    // Create token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    // Create token with fallback secret for cloud deployments
+    const jwtSecret = process.env.JWT_SECRET || 'webvaultsupersecretdashkeyjwt';
+    const token = jwt.sign({ id: user._id }, jwtSecret, {
       expiresIn: '30d',
     });
 
