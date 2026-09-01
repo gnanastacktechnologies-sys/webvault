@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build && node -e \"import('fs').then(fs => { fs.cpSync('dist', 'public', {recursive: true}); fs.copyFileSync('dist/index.html', 'dist/404.html'); fs.copyFileSync('dist/index.html', 'public/404.html'); })\"",
+    "build": "vite build && node -e \"import('fs').then(fs => { const routes=['login','dashboard','categories','websites','favorites']; fs.cpSync('dist', 'public', {recursive: true}); fs.copyFileSync('dist/index.html', 'dist/404.html'); fs.copyFileSync('dist/index.html', 'public/404.html'); for(const r of routes){ fs.mkdirSync('dist/'+r, {recursive:true}); fs.mkdirSync('public/'+r, {recursive:true}); fs.copyFileSync('dist/index.html', 'dist/'+r+'/index.html'); fs.copyFileSync('dist/index.html', 'public/'+r+'/index.html'); } })\"",
     "lint": "oxlint",
     "preview": "vite preview"
   },
