@@ -19,7 +19,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const sidebarContent = (
     <div className="flex flex-col h-full bg-card border-r border-border/40 py-6 px-4 overflow-y-auto overscroll-contain">
       {/* Brand Logo Header */}
-      <div className="flex items-center justify-between mb-8 px-2 flex-shrink-0">
+      <div className="flex items-center justify-between mb-8 px-2 shrink-0">
         <div>
           <h1 className="text-xl font-extrabold text-primary tracking-tight flex items-center gap-2">
             <span className="bg-primary text-white p-1.5 rounded-lg text-sm font-bold shadow-md shadow-primary/30">WV</span>
@@ -59,7 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       </nav>
 
       {/* Bottom Pinned Admin Info & Logout */}
-      <div className="border-t border-border/40 pt-4 mt-auto flex-shrink-0">
+      <div className="border-t border-border/40 pt-4 mt-auto shrink-0">
         <div className="flex items-center gap-3 px-2 mb-3">
           <div className="w-9 h-9 flex items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm uppercase shadow-sm">
             {user?.username?.substring(0, 2) || 'AD'}

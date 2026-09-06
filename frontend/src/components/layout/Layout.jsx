@@ -12,7 +12,7 @@ const Layout = () => {
       <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {/* Main Page Area */}
-      <div className="flex-grow flex flex-col md:pl-64 min-w-0 h-screen overflow-hidden">
+      <div className="grow flex flex-col md:pl-64 min-w-0 h-screen overflow-hidden">
         <Header onMobileMenuOpen={() => setIsMobileMenuOpen(true)} />
         
         {/* Scrollable Content Container */}
