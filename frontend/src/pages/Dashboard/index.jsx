@@ -245,7 +245,7 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="flex-grow flex items-center justify-center text-center p-6 border-2 border-dashed border-border/40 rounded-xl">
+            <div className="grow flex items-center justify-center text-center p-6 border-2 border-dashed border-border/40 rounded-xl">
               <p className="text-xs text-secondary-text font-medium">
                 No bookmark statistics available. Populate some websites first!
               </p>
@@ -266,7 +266,7 @@ const Dashboard = () => {
           </div>
 
           {recentWebsites.length > 0 ? (
-            <div className="space-y-3.5 overflow-y-auto max-h-[300px] flex-grow pr-1">
+            <div className="space-y-3.5 overflow-y-auto max-h-[300px] grow pr-1">
               {recentWebsites.map((web) => (
                 <div
                   key={web._id}
@@ -274,7 +274,7 @@ const Dashboard = () => {
                 >
                   <div className="min-w-0 flex-1 pr-3">
                     <div className="flex items-center gap-1.5">
-                      {web.favorite && <FaStar className="text-amber-400 text-xs flex-shrink-0" />}
+                      {web.favorite && <FaStar className="text-amber-400 text-xs shrink-0" />}
                       <h4 className="text-xs font-bold text-heading truncate">{web.name}</h4>
                     </div>
                     
@@ -308,7 +308,7 @@ const Dashboard = () => {
               ))}
             </div>
           ) : (
-            <div className="flex-grow flex items-center justify-center text-center p-6 border-2 border-dashed border-border/40 rounded-xl">
+            <div className="grow flex items-center justify-center text-center p-6 border-2 border-dashed border-border/40 rounded-xl">
               <p className="text-xs text-secondary-text font-medium">
                 No recent bookmarks.
               </p>

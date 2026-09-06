@@ -67,7 +67,7 @@ const Modal = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto flex-grow">{children}</div>
+        <div className="p-6 overflow-y-auto grow">{children}</div>
       </div>
     </div>
   );

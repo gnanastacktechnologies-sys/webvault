@@ -53,7 +53,7 @@ export const ToastProvider = ({ children }) => {
               role="alert"
             >
               <div className="flex items-center gap-3">
-                <Icon className="flex-shrink-0 text-lg" />
+                <Icon className="shrink-0 text-lg" />
                 <p className="text-sm font-medium">{toast.message}</p>
               </div>
               <button

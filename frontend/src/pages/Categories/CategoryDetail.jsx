@@ -37,7 +37,7 @@ export const Favicon = ({ url, name }) => {
   }
 
   if (imgError || !hostname) {
-    return <FaGlobe className="text-secondary-text flex-shrink-0" size={15} />;
+    return <FaGlobe className="text-secondary-text shrink-0" size={15} />;
   }
 
   return (
@@ -45,7 +45,7 @@ export const Favicon = ({ url, name }) => {
       src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
       alt={name}
       onError={() => setImgError(true)}
-      className="w-4 h-4 rounded-sm object-contain flex-shrink-0"
+      className="w-4 h-4 rounded-sm object-contain shrink-0"
     />
   );
 };
@@ -448,7 +448,7 @@ const CategoryDetail = () => {
         <div className="flex items-start gap-3.5 min-w-0">
           <button
             onClick={() => navigate('/categories')}
-            className="p-2 border border-border bg-white text-secondary-text hover:text-heading hover:bg-gray-50 rounded-xl transition-all flex-shrink-0 mt-0.5"
+            className="p-2 border border-border bg-white text-secondary-text hover:text-heading hover:bg-gray-50 rounded-xl transition-all shrink-0 mt-0.5"
             aria-label="Back to categories"
           >
             <FaArrowLeft size={13} />
@@ -466,7 +466,7 @@ const CategoryDetail = () => {
                 <h1 className="text-base md:text-lg font-black text-heading truncate">
                   {category.name}
                 </h1>
-                <span className="bg-slate-100 text-slate-800 text-xs font-black px-2.5 py-0.5 rounded-lg flex-shrink-0">
+                <span className="bg-slate-100 text-slate-800 text-xs font-black px-2.5 py-0.5 rounded-lg shrink-0">
                   {category.websiteCount} Bookmark{category.websiteCount === 1 ? '' : 's'}
                 </span>
               </div>
