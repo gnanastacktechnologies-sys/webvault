@@ -218,10 +218,10 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Column: Category Distribution Chart */}
-        <div className="lg:col-span-2 bg-card border border-border/40 p-5 rounded-2xl shadow-sm flex flex-col min-h-[350px]">
+        <div className="lg:col-span-2 bg-card border border-border/40 p-5 rounded-2xl shadow-sm flex flex-col min-h-87.5">
           <h3 className="text-sm font-bold text-heading mb-4">Category Distribution</h3>
           {chartData.length > 0 ? (
-            <div className="flex-1 min-h-[280px]">
+            <div className="flex-1 min-h-70">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -254,7 +254,7 @@ const Dashboard = () => {
         </div>
 
         {/* Right Column: Recently Added Websites */}
-        <div className="bg-card border border-border/40 p-5 rounded-2xl shadow-sm flex flex-col min-h-[350px]">
+        <div className="bg-card border border-border/40 p-5 rounded-2xl shadow-sm flex flex-col min-h-87.5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-heading">Recently Added</h3>
             <button
@@ -266,7 +266,7 @@ const Dashboard = () => {
           </div>
 
           {recentWebsites.length > 0 ? (
-            <div className="space-y-3.5 overflow-y-auto max-h-[300px] grow pr-1">
+            <div className="space-y-3.5 overflow-y-auto max-h-75 grow pr-1">
               {recentWebsites.map((web) => (
                 <div
                   key={web._id}
