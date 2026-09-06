@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { FaChartPie, FaGlobe, FaFolder, FaStar, FaSignOutAlt, FaTimes } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { logout, user } = useAuth();
+  const desktopSidebarRef = useRef(null);
+  const mobileSidebarRef = useRef(null);
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: FaChartPie },
@@ -15,6 +17,54 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const activeStyle = 'bg-primary text-white shadow-md shadow-primary/20';
   const inactiveStyle = 'text-secondary-text hover:text-heading hover:bg-gray-100';
+
+  // Lock document body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Prevent wheel scroll propagation to main page when pointer is inside sidebar
+  useEffect(() => {
+    const handleWheel = (e) => {
+      const el = e.currentTarget;
+      if (!el) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const deltaY = e.deltaY;
+
+      // If sidebar content fits inside height, absorb all wheel scrolling completely
+      if (scrollHeight <= clientHeight) {
+        e.preventDefault();
+        return;
+      }
+
+      // If sidebar has overflow, prevent boundary overscroll chaining
+      const isAtTop = scrollTop === 0 && deltaY < 0;
+      const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 1 && deltaY > 0;
+
+      if (isAtTop || isAtBottom) {
+        e.preventDefault();
+      }
+    };
+
+    const desktopEl = desktopSidebarRef.current;
+    const mobileEl = mobileSidebarRef.current;
+
+    if (desktopEl) desktopEl.addEventListener('wheel', handleWheel, { passive: false });
+    if (mobileEl) mobileEl.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      if (desktopEl) desktopEl.removeEventListener('wheel', handleWheel);
+      if (mobileEl) mobileEl.removeEventListener('wheel', handleWheel);
+    };
+  }, [isOpen]);
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-card border-r border-border/40 py-6 px-4 overflow-y-auto overscroll-contain">
@@ -83,7 +133,10 @@ const Sidebar = ({ isOpen, onClose }) => {
   return (
     <>
       {/* 1. Desktop Fixed Sidebar */}
-      <aside className="hidden md:block fixed top-0 bottom-0 left-0 w-64 z-20 overflow-hidden overscroll-contain">
+      <aside
+        ref={desktopSidebarRef}
+        className="hidden md:block fixed top-0 bottom-0 left-0 w-64 z-20 overflow-hidden overscroll-contain"
+      >
         {sidebarContent}
       </aside>
 
@@ -92,10 +145,13 @@ const Sidebar = ({ isOpen, onClose }) => {
         <div
           className="md:hidden fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300"
           onClick={onClose}
+          onTouchMove={(e) => e.preventDefault()}
         >
           <aside
+            ref={mobileSidebarRef}
             className="fixed top-0 bottom-0 left-0 w-72 z-40 transform transition-transform duration-300 translate-x-0 overflow-hidden overscroll-contain"
             onClick={(e) => e.stopPropagation()} // Stop bubbling closures
+            onTouchMove={(e) => e.stopPropagation()}
           >
             {sidebarContent}
           </aside>
@@ -106,3 +162,4 @@ const Sidebar = ({ isOpen, onClose }) => {
 };
 
 export default Sidebar;
+
