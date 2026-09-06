@@ -5,6 +5,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, Cartes
 import { useToast } from '../../context/ToastContext';
 import categoryService from '../../services/categoryService';
 import websiteService from '../../services/websiteService';
+import Button from '../../components/common/Button';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorState from '../../components/common/ErrorState';
 import Modal from '../../components/common/Modal';
