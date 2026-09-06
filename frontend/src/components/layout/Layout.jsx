@@ -7,16 +7,16 @@ const Layout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-mainbg flex">
+    <div className="h-screen w-screen overflow-hidden bg-mainbg flex">
       {/* Sidebar Navigation */}
       <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {/* Main Page Area */}
-      <div className="flex-grow flex flex-col md:pl-64 min-w-0 min-h-screen">
+      <div className="flex-grow flex flex-col md:pl-64 min-w-0 h-screen overflow-hidden">
         <Header onMobileMenuOpen={() => setIsMobileMenuOpen(true)} />
         
         {/* Scrollable Content Container */}
-        <main className="flex-1 p-4 md:p-6 w-full max-w-7xl mx-auto overflow-y-auto">
+        <main className="flex-1 p-4 md:p-6 w-full max-w-7xl mx-auto overflow-y-auto overscroll-contain">
           <Outlet />
         </main>
       </div>
@@ -25,3 +25,4 @@ const Layout = () => {
 };
 
 export default Layout;
+

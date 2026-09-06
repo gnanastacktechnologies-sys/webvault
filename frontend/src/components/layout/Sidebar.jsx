@@ -17,9 +17,9 @@ const Sidebar = ({ isOpen, onClose }) => {
   const inactiveStyle = 'text-secondary-text hover:text-heading hover:bg-gray-100';
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-card border-r border-border/40 py-6 px-4">
+    <div className="flex flex-col h-full bg-card border-r border-border/40 py-6 px-4 overflow-y-auto overscroll-contain">
       {/* Brand Logo Header */}
-      <div className="flex items-center justify-between mb-8 px-2">
+      <div className="flex items-center justify-between mb-8 px-2 flex-shrink-0">
         <div>
           <h1 className="text-xl font-extrabold text-primary tracking-tight flex items-center gap-2">
             <span className="bg-primary text-white p-1.5 rounded-lg text-sm font-bold shadow-md shadow-primary/30">WV</span>
@@ -59,7 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       </nav>
 
       {/* Bottom Pinned Admin Info & Logout */}
-      <div className="border-t border-border/40 pt-4 mt-auto">
+      <div className="border-t border-border/40 pt-4 mt-auto flex-shrink-0">
         <div className="flex items-center gap-3 px-2 mb-3">
           <div className="w-9 h-9 flex items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm uppercase shadow-sm">
             {user?.username?.substring(0, 2) || 'AD'}
@@ -83,7 +83,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   return (
     <>
       {/* 1. Desktop Fixed Sidebar */}
-      <aside className="hidden md:block fixed top-0 bottom-0 left-0 w-64 z-20">
+      <aside className="hidden md:block fixed top-0 bottom-0 left-0 w-64 z-20 overflow-hidden overscroll-contain">
         {sidebarContent}
       </aside>
 
@@ -94,7 +94,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           onClick={onClose}
         >
           <aside
-            className="fixed top-0 bottom-0 left-0 w-72 z-40 transform transition-transform duration-300 translate-x-0"
+            className="fixed top-0 bottom-0 left-0 w-72 z-40 transform transition-transform duration-300 translate-x-0 overflow-hidden overscroll-contain"
             onClick={(e) => e.stopPropagation()} // Stop bubbling closures
           >
             {sidebarContent}
