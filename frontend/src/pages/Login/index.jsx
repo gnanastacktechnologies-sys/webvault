@@ -213,9 +213,12 @@ const Login = () => {
         </form>
 
         {/* Footer Notes */}
-        <div className="text-center">
+        <div className="text-center space-y-1">
           <p className="text-[10px] text-secondary-text font-medium leading-relaxed">
             Secure admin portal. Unauthorized access is logged.
+          </p>
+          <p className="text-xs text-secondary-text font-semibold pt-1 border-t border-border/30">
+            © 2026 Gnanastack Technologies. All rights reserved.
           </p>
         </div>
       </div>

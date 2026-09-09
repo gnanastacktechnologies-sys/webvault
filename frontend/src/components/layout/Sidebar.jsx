@@ -132,6 +132,12 @@ const Sidebar = ({ isOpen, onClose }) => {
           <FaSignOutAlt className="text-lg" />
           <span>Logout</span>
         </button>
+
+        <div className="mt-3 pt-2 border-t border-border/30 text-center">
+          <p className="text-[10px] font-semibold text-secondary-text">
+            © 2026 Gnanastack Technologies
+          </p>
+        </div>
       </div>
     </div>
   );

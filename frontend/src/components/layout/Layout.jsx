@@ -16,8 +16,13 @@ const Layout = () => {
         <Header onMobileMenuOpen={() => setIsMobileMenuOpen(true)} />
         
         {/* Scrollable Content Container */}
-        <main className="flex-1 p-4 md:p-6 w-full max-w-7xl mx-auto overflow-y-auto overscroll-contain">
-          <Outlet />
+        <main className="flex-1 p-4 md:p-6 w-full max-w-7xl mx-auto overflow-y-auto overscroll-contain flex flex-col justify-between">
+          <div>
+            <Outlet />
+          </div>
+          <footer className="mt-8 pt-4 border-t border-border/40 text-center text-xs text-secondary-text font-medium">
+            © 2026 Gnanastack Technologies. All rights reserved.
+          </footer>
         </main>
       </div>
     </div>
