@@ -11,6 +11,7 @@ const Categories = lazy(() => import('./pages/Categories'));
 const CategoryDetail = lazy(() => import('./pages/Categories/CategoryDetail'));
 const Websites = lazy(() => import('./pages/Websites'));
 const UsersPage = lazy(() => import('./pages/Users'));
+const ProfilePage = lazy(() => import('./pages/Profile'));
 
 const App = () => {
   return (
@@ -42,6 +43,9 @@ const App = () => {
 
               {/* Users & Access Management */}
               <Route path="/users" element={<UsersPage />} />
+
+              {/* Profile Page */}
+              <Route path="/profile" element={<ProfilePage />} />
 
               {/* Catch-all to Dashboard */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />

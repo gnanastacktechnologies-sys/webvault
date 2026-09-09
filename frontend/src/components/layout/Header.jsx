@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { FaBars, FaSearch, FaTimes, FaUserCircle, FaChevronDown, FaUserCog, FaUserPlus, FaSignOutAlt } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import ProfileModal from '../profile/ProfileModal';
 
 const Header = ({ onMobileMenuOpen }) => {
   const { user, logout } = useAuth();
@@ -12,8 +11,6 @@ const Header = ({ onMobileMenuOpen }) => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [profileModalTab, setProfileModalTab] = useState('profile');
 
   const dropdownRef = useRef(null);
 
@@ -62,13 +59,13 @@ const Header = ({ onMobileMenuOpen }) => {
     if (path.startsWith('/categories')) return 'Categories';
     if (path.startsWith('/favorites')) return 'Favorites';
     if (path.startsWith('/users')) return 'Users & Access';
+    if (path.startsWith('/profile')) return 'Profile';
     return 'WebVault';
   };
 
-  const openProfileModal = (tab = 'profile') => {
-    setProfileModalTab(tab);
-    setIsProfileModalOpen(true);
+  const navigateToProfile = (tab = 'profile') => {
     setIsDropdownOpen(false);
+    navigate(`/profile?tab=${tab}`);
   };
 
   const handleLogout = () => {
@@ -78,128 +75,119 @@ const Header = ({ onMobileMenuOpen }) => {
   };
 
   return (
-    <>
-      <header className="sticky top-0 right-0 z-10 flex items-center justify-between bg-card border-b border-border/40 h-16 px-4 md:px-6">
-        {/* Mobile Hamburger & Page Title */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onMobileMenuOpen}
-            className="md:hidden p-2 text-secondary-text hover:text-heading hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-            aria-label="Open navigation menu"
-          >
-            <FaBars size={18} />
-          </button>
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="WebVault" className="w-7 h-7 rounded-lg object-cover sm:hidden" />
-            <h2 className="text-base md:text-lg font-bold text-heading">
-              {getPageTitle()}
-            </h2>
+    <header className="sticky top-0 right-0 z-10 flex items-center justify-between bg-card border-b border-border/40 h-16 px-4 md:px-6">
+      {/* Mobile Hamburger & Page Title */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onMobileMenuOpen}
+          className="md:hidden p-2 text-secondary-text hover:text-heading hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          aria-label="Open navigation menu"
+        >
+          <FaBars size={18} />
+        </button>
+        <div className="flex items-center gap-2">
+          <img src="/logo.png" alt="WebVault" className="w-7 h-7 rounded-lg object-cover sm:hidden" />
+          <h2 className="text-base md:text-lg font-bold text-heading">
+            {getPageTitle()}
+          </h2>
+        </div>
+      </div>
+
+      {/* Global Search Bar */}
+      <div className="flex-1 max-w-lg mx-4 sm:mx-8">
+        <form onSubmit={handleSearchSubmit} className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary-text">
+            <FaSearch size={14} />
           </div>
-        </div>
-
-        {/* Global Search Bar */}
-        <div className="flex-1 max-w-lg mx-4 sm:mx-8">
-          <form onSubmit={handleSearchSubmit} className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary-text">
-              <FaSearch size={14} />
-            </div>
-            <input
-              type="search"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search websites, URLs, tags, categories..."
-              className="w-full pl-9 pr-8 py-1.5 md:py-2 text-xs md:text-sm bg-inputbg border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-200"
-            />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-secondary-text hover:text-heading transition-colors"
-                aria-label="Clear search"
-              >
-                <FaTimes size={12} />
-              </button>
-            )}
-          </form>
-        </div>
-
-        {/* Profile & Quick Logout Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Profile Dropdown */}
-          <div className="relative" ref={dropdownRef}>
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search websites, URLs, tags, categories..."
+            className="w-full pl-9 pr-8 py-1.5 md:py-2 text-xs md:text-sm bg-inputbg border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-200"
+          />
+          {searchTerm && (
             <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-mainbg transition-colors cursor-pointer border border-transparent hover:border-border/40 focus:outline-none"
-              aria-label="User Profile Menu"
+              type="button"
+              onClick={handleClearSearch}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-secondary-text hover:text-heading transition-colors"
+              aria-label="Clear search"
             >
-              <FaUserCircle size={22} className="text-primary shrink-0" />
-              <span className="text-xs font-bold text-heading max-w-28 truncate hidden sm:inline">
-                {user?.username || 'Gnanasekaran'}
-              </span>
-              <FaChevronDown size={10} className={`text-secondary-text transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <FaTimes size={12} />
             </button>
+          )}
+        </form>
+      </div>
 
-            {/* Dropdown Menu Popup */}
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-card border border-border/80 rounded-2xl shadow-xl py-2 z-50 animate-fadeIn">
-                
-                {/* User Header Summary */}
-                <div className="px-4 py-2.5 border-b border-border/40 mb-1">
-                  <p className="text-xs font-extrabold text-heading truncate">{user?.username || 'Gnanasekaran'}</p>
-                  <p className="text-[10px] text-secondary-text truncate">{user?.email || 'gnanastacktechnologies@gmail.com'}</p>
-                </div>
-
-                {/* Menu Items */}
-                <button
-                  onClick={() => openProfileModal('profile')}
-                  className="w-full px-4 py-2 text-left text-xs font-semibold text-heading hover:bg-primary/10 hover:text-primary flex items-center gap-2.5 transition-colors"
-                >
-                  <FaUserCog size={14} className="text-primary" />
-                  Profile & Security
-                </button>
-
-                <button
-                  onClick={() => openProfileModal('adduser')}
-                  className="w-full px-4 py-2 text-left text-xs font-semibold text-heading hover:bg-primary/10 hover:text-primary flex items-center gap-2.5 transition-colors"
-                >
-                  <FaUserPlus size={14} className="text-primary" />
-                  Add New User
-                </button>
-
-                <div className="my-1 border-t border-border/40" />
-
-                <button
-                  onClick={handleLogout}
-                  className="w-full px-4 py-2 text-left text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2.5 transition-colors"
-                >
-                  <FaSignOutAlt size={14} />
-                  Sign Out
-                </button>
-
-              </div>
-            )}
-          </div>
-
-          {/* Quick Header Logout Button */}
+      {/* Profile & Quick Logout Actions */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Profile Dropdown */}
+        <div className="relative" ref={dropdownRef}>
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-1.5 text-red-500 hover:bg-red-50 rounded-xl transition-colors border border-red-200/50 bg-red-50/40"
-            title="Sign Out"
-            aria-label="Sign Out"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-mainbg transition-colors cursor-pointer border border-transparent hover:border-border/40 focus:outline-none"
+            aria-label="User Profile Menu"
           >
-            <FaSignOutAlt size={15} />
-            <span className="text-xs font-bold hidden sm:inline">Logout</span>
+            <FaUserCircle size={22} className="text-primary shrink-0" />
+            <span className="text-xs font-bold text-heading max-w-28 truncate hidden sm:inline">
+              {user?.username || 'Gnanasekaran'}
+            </span>
+            <FaChevronDown size={10} className={`text-secondary-text transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
-        </div>
-      </header>
 
-      {/* Admin Profile & User Management Modal */}
-      <ProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-        initialTab={profileModalTab}
-      />
-    </>
+          {/* Dropdown Menu Popup */}
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-56 bg-card border border-border/80 rounded-2xl shadow-xl py-2 z-50 animate-fadeIn">
+              
+              {/* User Header Summary */}
+              <div className="px-4 py-2.5 border-b border-border/40 mb-1">
+                <p className="text-xs font-extrabold text-heading truncate">{user?.username || 'Gnanasekaran'}</p>
+                <p className="text-[10px] text-secondary-text truncate">{user?.email || 'gnanastacktechnologies@gmail.com'}</p>
+              </div>
+
+              {/* Menu Items */}
+              <button
+                onClick={() => navigateToProfile('profile')}
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-heading hover:bg-primary/10 hover:text-primary flex items-center gap-2.5 transition-colors"
+              >
+                <FaUserCog size={14} className="text-primary" />
+                Profile & Security
+              </button>
+
+              <button
+                onClick={() => navigateToProfile('adduser')}
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-heading hover:bg-primary/10 hover:text-primary flex items-center gap-2.5 transition-colors"
+              >
+                <FaUserPlus size={14} className="text-primary" />
+                Add New User
+              </button>
+
+              <div className="my-1 border-t border-border/40" />
+
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2.5 transition-colors"
+              >
+                <FaSignOutAlt size={14} />
+                Sign Out
+              </button>
+
+            </div>
+          )}
+        </div>
+
+        {/* Quick Header Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-1.5 text-red-500 hover:bg-red-50 rounded-xl transition-colors border border-red-200/50 bg-red-50/40"
+          title="Sign Out"
+          aria-label="Sign Out"
+        >
+          <FaSignOutAlt size={15} />
+          <span className="text-xs font-bold hidden sm:inline">Logout</span>
+        </button>
+      </div>
+    </header>
   );
 };
 
