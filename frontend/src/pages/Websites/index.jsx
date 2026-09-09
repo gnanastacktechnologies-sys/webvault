@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { FaPlus, FaGlobe, FaCopy, FaExternalLinkAlt, FaEdit, FaTrashAlt, FaStar, FaRegStar, FaTags, FaFilter } from 'react-icons/fa';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import categoryService from '../../services/categoryService';
 import websiteService from '../../services/websiteService';
@@ -15,6 +16,7 @@ import ConfirmModal from '../../components/common/ConfirmModal';
 import WebsiteForm from '../../components/forms/WebsiteForm';
 
 const Websites = () => {
+  const { isAdmin } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { success, error } = useToast();
@@ -258,7 +260,20 @@ const Websites = () => {
       render: (row) => (
         <div className="flex items-center gap-2.5">
           <Favicon url={row.url} name={row.name} />
-          <span className="font-bold text-heading text-xs md:text-sm">{row.name}</span>
+          <div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-bold text-heading text-xs md:text-sm">{row.name}</span>
+              {isAdmin && (
+                <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${
+                  row.allowedAll !== false
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {row.allowedAll !== false ? '🌐 Public' : `🔒 Restricted (${row.allowedUsers?.length || 0})`}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       ),
     },

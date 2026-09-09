@@ -31,6 +31,21 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    role: {
+      type: String,
+      enum: ['admin', 'user'],
+      default: 'user',
+    },
+    isSuperAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    allowedWebsites: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Website',
+      },
+    ],
   },
   {
     timestamps: true,

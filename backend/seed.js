@@ -46,6 +46,8 @@ const seedDatabase = async () => {
         username: adminUsername,
         passwordHash,
         email: adminEmail,
+        role: 'admin',
+        isSuperAdmin: true,
       });
       console.log('Admin user created successfully.');
     } else {
@@ -53,6 +55,8 @@ const seedDatabase = async () => {
       existingAdmin.username = adminUsername;
       existingAdmin.passwordHash = passwordHash;
       existingAdmin.email = adminEmail;
+      existingAdmin.role = 'admin';
+      existingAdmin.isSuperAdmin = true;
       await existingAdmin.save();
       console.log('Admin user updated successfully.');
     }

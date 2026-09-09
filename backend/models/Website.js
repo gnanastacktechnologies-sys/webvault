@@ -46,6 +46,16 @@ const websiteSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    allowedAll: {
+      type: Boolean,
+      default: true,
+    },
+    allowedUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     timestamps: true,

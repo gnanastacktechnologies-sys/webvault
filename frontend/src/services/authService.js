@@ -51,6 +51,24 @@ const authService = {
     const response = await api.post('/auth/users', userData);
     return response.data;
   },
+
+  // Get list of all users (Admin only)
+  getUsers: async () => {
+    const response = await api.get('/auth/users');
+    return response.data;
+  },
+
+  // Update user website access & role (Admin only)
+  updateUserAccess: async (userId, accessData) => {
+    const response = await api.put(`/auth/users/${userId}/access`, accessData);
+    return response.data;
+  },
+
+  // Delete sub-user account (Admin only)
+  deleteUser: async (userId) => {
+    const response = await api.delete(`/auth/users/${userId}`);
+    return response.data;
+  },
 };
 
 export default authService;

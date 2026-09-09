@@ -36,6 +36,16 @@ export const login = async (req, res, next) => {
       });
     }
 
+    // Ensure admin flags for Gnanasekaran / process.env.ADMIN_USERNAME
+    const adminName = process.env.ADMIN_USERNAME || 'Gnanasekaran';
+    if (user.username === adminName || user.username === 'admin' || user.username === 'Gnanasekaran') {
+      if (user.role !== 'admin' || !user.isSuperAdmin) {
+        user.role = 'admin';
+        user.isSuperAdmin = true;
+        await user.save();
+      }
+    }
+
     // Create token with fallback secret for cloud deployments
     const jwtSecret = process.env.JWT_SECRET || 'webvaultsupersecretdashkeyjwt';
     const token = jwt.sign({ id: user._id }, jwtSecret, {
@@ -49,6 +59,10 @@ export const login = async (req, res, next) => {
       user: {
         id: user._id,
         username: user.username,
+        email: user.email,
+        role: user.role || 'user',
+        isSuperAdmin: !!user.isSuperAdmin,
+        allowedWebsites: user.allowedWebsites || [],
       },
     });
   } catch (error) {
@@ -286,12 +300,27 @@ export const updateProfile = async (req, res, next) => {
   }
 };
 
+// @desc    Get list of all users (for Admin access management)
+// @route   GET /api/auth/users
+// @access  Private (Admin)
+export const getUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({}).select('-passwordHash -resetOtp -pendingPasswordHash').populate('allowedWebsites', 'name url category');
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Create/Add a new user/admin account
 // @route   POST /api/auth/users
-// @access  Private
+// @access  Private (Admin)
 export const createUser = async (req, res, next) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, role = 'user', allowedWebsites = [] } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({
@@ -313,18 +342,93 @@ export const createUser = async (req, res, next) => {
 
     const newUser = await User.create({
       username: username.trim(),
-      email: email ? email.toLowerCase().trim() : 'admin@webvault.com',
+      email: email ? email.toLowerCase().trim() : 'user@webvault.com',
       passwordHash,
+      role: role === 'admin' ? 'admin' : 'user',
+      isSuperAdmin: false,
+      allowedWebsites: Array.isArray(allowedWebsites) ? allowedWebsites : [],
     });
+
+    const populatedUser = await User.findById(newUser._id).select('-passwordHash').populate('allowedWebsites', 'name url category');
 
     res.status(201).json({
       success: true,
       message: `User '${newUser.username}' created successfully!`,
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-      },
+      user: populatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update user access permissions & role
+// @route   PUT /api/auth/users/:id/access
+// @access  Private (Admin)
+export const updateUserAccess = async (req, res, next) => {
+  try {
+    const { role, allowedWebsites } = req.body;
+    const userToUpdate = await User.findById(req.params.id);
+
+    if (!userToUpdate) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    if (role && ['admin', 'user'].includes(role)) {
+      // Prevent demoting SuperAdmin
+      if (!userToUpdate.isSuperAdmin) {
+        userToUpdate.role = role;
+      }
+    }
+
+    if (Array.isArray(allowedWebsites)) {
+      userToUpdate.allowedWebsites = allowedWebsites;
+    }
+
+    await userToUpdate.save();
+
+    const updatedUser = await User.findById(userToUpdate._id)
+      .select('-passwordHash')
+      .populate('allowedWebsites', 'name url category');
+
+    res.status(200).json({
+      success: true,
+      message: `Permissions updated for '${updatedUser.username}'`,
+      user: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete a sub-user account
+// @route   DELETE /api/auth/users/:id
+// @access  Private (Admin)
+export const deleteUser = async (req, res, next) => {
+  try {
+    const userToDelete = await User.findById(req.params.id);
+
+    if (!userToDelete) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    if (userToDelete.isSuperAdmin || userToDelete._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete Super Admin or current active user account',
+      });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      message: `User '${userToDelete.username}' deleted successfully`,
     });
   } catch (error) {
     next(error);

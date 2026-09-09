@@ -16,6 +16,25 @@ export const getWebsites = async (req, res, next) => {
     // Build filter query
     const filter = {};
 
+    // User Access Control Filtering: If not admin/superAdmin, only show websites user is authorized to access
+    const userRole = req.user?.role || 'user';
+    const isSuperAdmin = !!req.user?.isSuperAdmin;
+
+    if (userRole !== 'admin' && !isSuperAdmin) {
+      const userAllowedWebsiteIds = (req.user?.allowedWebsites || []).map((id) =>
+        id instanceof mongoose.Types.ObjectId ? id : new mongoose.Types.ObjectId(id)
+      );
+
+      filter.$and = filter.$and || [];
+      filter.$and.push({
+        $or: [
+          { allowedAll: { $ne: false } },
+          { allowedUsers: req.user._id },
+          { _id: { $in: userAllowedWebsiteIds } },
+        ],
+      });
+    }
+
     if (category) {
       filter.category = new mongoose.Types.ObjectId(category);
     }
@@ -31,7 +50,7 @@ export const getWebsites = async (req, res, next) => {
       const matchedCategories = await Category.find({ name: searchRegex }).select('_id');
       const categoryIds = matchedCategories.map((c) => c._id);
 
-      const orConditions = [
+      const searchConditions = [
         { name: searchRegex },
         { url: searchRegex },
         { description: searchRegex },
@@ -40,10 +59,15 @@ export const getWebsites = async (req, res, next) => {
       ];
 
       if (categoryIds.length > 0) {
-        orConditions.push({ category: { $in: categoryIds } });
+        searchConditions.push({ category: { $in: categoryIds } });
       }
 
-      filter.$or = orConditions;
+      if (filter.$or) {
+        filter.$and = filter.$and || [];
+        filter.$and.push({ $or: searchConditions });
+      } else {
+        filter.$or = searchConditions;
+      }
     }
 
     // Build Aggregation Pipeline for sorting by populated Category fields as well as normal fields
@@ -92,6 +116,8 @@ export const getWebsites = async (req, res, next) => {
         tags: 1,
         notes: 1,
         favorite: 1,
+        allowedAll: 1,
+        allowedUsers: 1,
         createdAt: 1,
         updatedAt: 1,
         category: '$categoryInfo',
@@ -151,7 +177,7 @@ export const getWebsite = async (req, res, next) => {
 // @access  Private
 export const createWebsite = async (req, res, next) => {
   try {
-    const { name, url, category, description, tags, notes, favorite } = req.body;
+    const { name, url, category, description, tags, notes, favorite, allowedAll, allowedUsers } = req.body;
 
     if (!name || !url || !category) {
       return res.status(400).json({
@@ -187,6 +213,8 @@ export const createWebsite = async (req, res, next) => {
       tags: Array.isArray(tags) ? tags : [],
       notes: notes ? notes.trim() : '',
       favorite: !!favorite,
+      allowedAll: allowedAll !== undefined ? !!allowedAll : true,
+      allowedUsers: Array.isArray(allowedUsers) ? allowedUsers : [],
     });
 
     const populatedWebsite = await Website.findById(website._id).populate('category');
@@ -206,7 +234,7 @@ export const createWebsite = async (req, res, next) => {
 // @access  Private
 export const updateWebsite = async (req, res, next) => {
   try {
-    const { name, url, category, description, tags, notes, favorite } = req.body;
+    const { name, url, category, description, tags, notes, favorite, allowedAll, allowedUsers } = req.body;
 
     let website = await Website.findById(req.params.id);
 
@@ -246,6 +274,8 @@ export const updateWebsite = async (req, res, next) => {
     if (tags !== undefined) website.tags = Array.isArray(tags) ? tags : [];
     if (notes !== undefined) website.notes = notes.trim();
     if (favorite !== undefined) website.favorite = !!favorite;
+    if (allowedAll !== undefined) website.allowedAll = !!allowedAll;
+    if (allowedUsers !== undefined) website.allowedUsers = Array.isArray(allowedUsers) ? allowedUsers : [];
 
     await website.save();
     const updatedWebsite = await Website.findById(website._id).populate('category');
