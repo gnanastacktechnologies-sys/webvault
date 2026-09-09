@@ -538,40 +538,61 @@ const UsersPage = () => {
 
             {editingRole === 'user' && (
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                   <label className="text-xs font-bold text-heading">Select Granted Websites:</label>
-                  <span className="text-xs font-bold text-primary">
-                    {editingWebsites.length} of {websites.length} Granted
-                  </span>
+                  <div className="flex items-center gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setEditingWebsites(websites.map((w) => w._id))}
+                      className="text-xs text-primary hover:underline font-bold cursor-pointer"
+                    >
+                      Select All
+                    </button>
+                    <span className="text-gray-300">|</span>
+                    <button
+                      type="button"
+                      onClick={() => setEditingWebsites([])}
+                      className="text-xs text-secondary-text hover:underline font-bold cursor-pointer"
+                    >
+                      Clear All
+                    </button>
+                    <span className="text-xs font-bold text-primary ml-2 bg-primary/10 px-2 py-0.5 rounded-md">
+                      {editingWebsites.length} of {websites.length} Granted
+                    </span>
+                  </div>
                 </div>
 
                 <div className="max-h-56 overflow-y-auto space-y-1.5 p-2.5 bg-mainbg border border-border/50 rounded-xl">
-                  {websites.map((w) => {
-                    const isChecked = editingWebsites.includes(w._id);
-                    return (
-                      <label
-                        key={w._id}
-                        className={`flex items-center justify-between p-2.5 rounded-xl border text-xs cursor-pointer transition-colors ${
-                          isChecked
-                            ? 'bg-primary/10 border-primary/40 text-heading font-bold'
-                            : 'bg-card border-border/40 text-secondary-text hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => toggleWebsiteCheck(w._id, editingWebsites, setEditingWebsites)}
-                            className="w-4 h-4 rounded text-primary focus:ring-primary"
-                          />
-                          <span className="truncate">{w.name}</span>
-                        </div>
-                        <span className="text-[10px] text-secondary-text font-mono truncate max-w-48">
-                          {w.url.replace(/^https?:\/\//, '')}
-                        </span>
-                      </label>
-                    );
-                  })}
+                  {websites.length === 0 ? (
+                    <p className="text-xs text-secondary-text py-3 text-center">No websites bookmarked yet in WebVault.</p>
+                  ) : (
+                    websites.map((w) => {
+                      const isChecked = editingWebsites.includes(w._id);
+                      return (
+                        <label
+                          key={w._id}
+                          className={`flex items-center justify-between p-2.5 rounded-xl border text-xs cursor-pointer transition-colors ${
+                            isChecked
+                              ? 'bg-primary/10 border-primary/40 text-heading font-bold'
+                              : 'bg-card border-border/40 text-secondary-text hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleWebsiteCheck(w._id, editingWebsites, setEditingWebsites)}
+                              className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
+                            />
+                            <span className="truncate">{w.name}</span>
+                          </div>
+                          <span className="text-[10px] text-secondary-text font-mono truncate max-w-48">
+                            {w.url.replace(/^https?:\/\//, '')}
+                          </span>
+                        </label>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}
