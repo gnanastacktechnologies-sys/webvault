@@ -122,58 +122,73 @@ const Header = ({ onMobileMenuOpen }) => {
           </form>
         </div>
 
-        {/* Profile Dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-mainbg transition-colors cursor-pointer border border-transparent hover:border-border/40 focus:outline-none"
-          >
-            <FaUserCircle size={22} className="text-primary" />
-            <span className="text-xs font-bold text-heading max-w-30 truncate">
-              {user?.username || 'Gnanasekaran'}
-            </span>
-            <FaChevronDown size={10} className={`text-secondary-text transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
+        {/* Profile & Quick Logout Actions */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Profile Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-mainbg transition-colors cursor-pointer border border-transparent hover:border-border/40 focus:outline-none"
+              aria-label="User Profile Menu"
+            >
+              <FaUserCircle size={22} className="text-primary shrink-0" />
+              <span className="text-xs font-bold text-heading max-w-28 truncate hidden sm:inline">
+                {user?.username || 'Gnanasekaran'}
+              </span>
+              <FaChevronDown size={10} className={`text-secondary-text transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-          {/* Dropdown Menu Popup */}
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-card border border-border/80 rounded-2xl shadow-xl py-2 z-50 animate-fadeIn">
-              
-              {/* User Header Summary */}
-              <div className="px-4 py-2.5 border-b border-border/40 mb-1">
-                <p className="text-xs font-extrabold text-heading truncate">{user?.username || 'Gnanasekaran'}</p>
-                <p className="text-[10px] text-secondary-text truncate">{user?.email || 'gnanastacktechnologies@gmail.com'}</p>
+            {/* Dropdown Menu Popup */}
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-card border border-border/80 rounded-2xl shadow-xl py-2 z-50 animate-fadeIn">
+                
+                {/* User Header Summary */}
+                <div className="px-4 py-2.5 border-b border-border/40 mb-1">
+                  <p className="text-xs font-extrabold text-heading truncate">{user?.username || 'Gnanasekaran'}</p>
+                  <p className="text-[10px] text-secondary-text truncate">{user?.email || 'gnanastacktechnologies@gmail.com'}</p>
+                </div>
+
+                {/* Menu Items */}
+                <button
+                  onClick={() => openProfileModal('profile')}
+                  className="w-full px-4 py-2 text-left text-xs font-semibold text-heading hover:bg-primary/10 hover:text-primary flex items-center gap-2.5 transition-colors"
+                >
+                  <FaUserCog size={14} className="text-primary" />
+                  Profile & Security
+                </button>
+
+                <button
+                  onClick={() => openProfileModal('adduser')}
+                  className="w-full px-4 py-2 text-left text-xs font-semibold text-heading hover:bg-primary/10 hover:text-primary flex items-center gap-2.5 transition-colors"
+                >
+                  <FaUserPlus size={14} className="text-primary" />
+                  Add New User
+                </button>
+
+                <div className="my-1 border-t border-border/40" />
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-left text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2.5 transition-colors"
+                >
+                  <FaSignOutAlt size={14} />
+                  Sign Out
+                </button>
+
               </div>
+            )}
+          </div>
 
-              {/* Menu Items */}
-              <button
-                onClick={() => openProfileModal('profile')}
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-heading hover:bg-primary/10 hover:text-primary flex items-center gap-2.5 transition-colors"
-              >
-                <FaUserCog size={14} className="text-primary" />
-                Profile & Security
-              </button>
-
-              <button
-                onClick={() => openProfileModal('adduser')}
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-heading hover:bg-primary/10 hover:text-primary flex items-center gap-2.5 transition-colors"
-              >
-                <FaUserPlus size={14} className="text-primary" />
-                Add New User
-              </button>
-
-              <div className="my-1 border-t border-border/40" />
-
-              <button
-                onClick={handleLogout}
-                className="w-full px-4 py-2 text-left text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2.5 transition-colors"
-              >
-                <FaSignOutAlt size={14} />
-                Sign Out
-              </button>
-
-            </div>
-          )}
+          {/* Quick Header Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-1.5 text-red-500 hover:bg-red-50 rounded-xl transition-colors border border-red-200/50 bg-red-50/40"
+            title="Sign Out"
+            aria-label="Sign Out"
+          >
+            <FaSignOutAlt size={15} />
+            <span className="text-xs font-bold hidden sm:inline">Logout</span>
+          </button>
         </div>
       </header>
 
