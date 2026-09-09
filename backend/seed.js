@@ -63,7 +63,24 @@ const seedDatabase = async () => {
       console.log('Admin user updated successfully.');
     }
 
-    // 2. Seed Default Categories
+    // 2. Seed Default Dummy User for Access Control Testing
+    let dummyUser = await User.findOne({ username: 'User1' });
+    if (!dummyUser) {
+      console.log('Creating Dummy User: User1');
+      const dummyPasswordHash = await bcrypt.hash('User123@', salt);
+      await User.create({
+        username: 'User1',
+        passwordHash: dummyPasswordHash,
+        plainPassword: 'User123@',
+        email: 'user1@webvault.com',
+        role: 'user',
+        isSuperAdmin: false,
+        allowedWebsites: [],
+      });
+      console.log('Dummy user User1 created successfully.');
+    }
+
+    // 3. Seed Default Categories
     for (const cat of defaultCategories) {
       const existingCategory = await Category.findOne({ name: cat.name });
       if (!existingCategory) {

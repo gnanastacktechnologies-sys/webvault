@@ -3,6 +3,15 @@ import Website from '../models/Website.js';
 import Category from '../models/Category.js';
 import User from '../models/User.js';
 
+const parseBoolean = (val, defaultVal = true) => {
+  if (val === undefined || val === null) return defaultVal;
+  if (typeof val === 'boolean') return val;
+  if (typeof val === 'string') {
+    return val.toLowerCase() === 'true';
+  }
+  return !!val;
+};
+
 // @desc    Get all websites (paginated, sorted, filtered, searched)
 // @route   GET /api/websites
 // @access  Private
@@ -214,7 +223,7 @@ export const createWebsite = async (req, res, next) => {
       tags: Array.isArray(tags) ? tags : [],
       notes: notes ? notes.trim() : '',
       favorite: !!favorite,
-      allowedAll: allowedAll !== undefined ? Boolean(allowedAll) : true,
+      allowedAll: parseBoolean(allowedAll, true),
       allowedUsers: Array.isArray(allowedUsers) ? allowedUsers : [],
     });
 
@@ -282,7 +291,7 @@ export const updateWebsite = async (req, res, next) => {
     if (tags !== undefined) website.tags = Array.isArray(tags) ? tags : [];
     if (notes !== undefined) website.notes = notes.trim();
     if (favorite !== undefined) website.favorite = !!favorite;
-    if (allowedAll !== undefined) website.allowedAll = Boolean(allowedAll);
+    if (allowedAll !== undefined) website.allowedAll = parseBoolean(allowedAll, true);
     if (allowedUsers !== undefined) website.allowedUsers = Array.isArray(allowedUsers) ? allowedUsers : [];
 
     await website.save();
