@@ -143,14 +143,16 @@ const Login = () => {
         
         {/* Brand Header */}
         <div className="text-center">
-          <h1 className="text-2xl font-extrabold text-primary tracking-tight flex items-center justify-center gap-2.5">
-            <span className="bg-primary text-white p-2 rounded-xl text-base font-bold shadow-md shadow-primary/30">
-              WV
-            </span>
+          <img
+            src="/logo.png"
+            alt="WebVault Logo"
+            className="w-20 h-20 rounded-2xl object-cover shadow-xl shadow-primary/30 mx-auto mb-3 border border-border/40"
+          />
+          <h1 className="text-2xl font-extrabold text-primary tracking-tight">
             WebVault
           </h1>
-          <p className="text-xs font-semibold text-secondary-text mt-1.5 uppercase tracking-wide">
-            Personal Website Manager
+          <p className="text-xs font-semibold text-secondary-text mt-1.5 tracking-wide">
+            Your Website, Our Safe Place
           </p>
           <div className="h-0.5 w-16 bg-primary/20 mx-auto mt-4 rounded-full" />
         </div>

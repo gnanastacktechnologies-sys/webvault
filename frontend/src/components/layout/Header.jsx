@@ -88,9 +88,12 @@ const Header = ({ onMobileMenuOpen }) => {
           >
             <FaBars size={18} />
           </button>
-          <h2 className="text-base md:text-lg font-bold text-heading hidden sm:block">
-            {getPageTitle()}
-          </h2>
+          <div className="flex items-center gap-2">
+            <img src="/logo.png" alt="WebVault" className="w-7 h-7 rounded-lg object-cover sm:hidden" />
+            <h2 className="text-base md:text-lg font-bold text-heading">
+              {getPageTitle()}
+            </h2>
+          </div>
         </div>
 
         {/* Global Search Bar */}

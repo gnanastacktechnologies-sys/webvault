@@ -70,14 +70,20 @@ const Sidebar = ({ isOpen, onClose }) => {
     <div className="flex flex-col h-full bg-card border-r border-border/40 py-6 px-4 overflow-y-auto overscroll-contain">
       {/* Brand Logo Header */}
       <div className="flex items-center justify-between mb-8 px-2 shrink-0">
-        <div>
-          <h1 className="text-xl font-extrabold text-primary tracking-tight flex items-center gap-2">
-            <span className="bg-primary text-white p-1.5 rounded-lg text-sm font-bold shadow-md shadow-primary/30">WV</span>
-            WebVault
-          </h1>
-          <p className="text-[10px] font-semibold text-secondary-text mt-0.5 tracking-wide uppercase">
-            Personal Website Manager
-          </p>
+        <div className="flex items-center gap-3">
+          <img
+            src="/logo.png"
+            alt="WebVault Logo"
+            className="w-10 h-10 rounded-xl object-cover shadow-md shadow-primary/30"
+          />
+          <div>
+            <h1 className="text-xl font-extrabold text-primary tracking-tight">
+              WebVault
+            </h1>
+            <p className="text-[10px] font-semibold text-secondary-text mt-0.5 tracking-wide uppercase">
+              Personal Website Manager
+            </p>
+          </div>
         </div>
         {/* Mobile close button inside drawer */}
         <button
