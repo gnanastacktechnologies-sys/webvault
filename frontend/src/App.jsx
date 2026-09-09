@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Categories from './pages/Categories';
 import CategoryDetail from './pages/Categories/CategoryDetail';
 import Websites from './pages/Websites';
+import UsersPage from './pages/Users';
 
 const App = () => {
   return (
@@ -28,6 +29,9 @@ const App = () => {
             {/* Categories & Category detail websites view */}
             <Route path="/categories" element={<Categories />} />
             <Route path="/categories/:id" element={<CategoryDetail />} />
+
+            {/* Users & Access Management */}
+            <Route path="/users" element={<UsersPage />} />
 
             {/* Catch-all to Dashboard */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

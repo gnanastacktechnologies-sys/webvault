@@ -14,7 +14,7 @@ const copyDir = (src, dest) => {
   }
 };
 
-const routes = ['login', 'dashboard', 'categories', 'websites', 'favorites'];
+const routes = ['login', 'dashboard', 'categories', 'websites', 'favorites', 'users'];
 
 try {
   let frontendDist = path.resolve('frontend/dist');

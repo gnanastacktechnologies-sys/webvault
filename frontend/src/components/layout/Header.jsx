@@ -61,6 +61,7 @@ const Header = ({ onMobileMenuOpen }) => {
     if (path.startsWith('/websites')) return 'Websites';
     if (path.startsWith('/categories')) return 'Categories';
     if (path.startsWith('/favorites')) return 'Favorites';
+    if (path.startsWith('/users')) return 'Users & Access';
     return 'WebVault';
   };
 

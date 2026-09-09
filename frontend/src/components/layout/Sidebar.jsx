@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaChartPie, FaGlobe, FaFolder, FaStar, FaSignOutAlt, FaTimes } from 'react-icons/fa';
+import { FaChartPie, FaGlobe, FaFolder, FaStar, FaUsers, FaSignOutAlt, FaTimes } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const { logout, user } = useAuth();
+  const { logout, user, isAdmin } = useAuth();
   const desktopSidebarRef = useRef(null);
   const mobileSidebarRef = useRef(null);
 
@@ -13,6 +13,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { name: 'Websites', path: '/websites', icon: FaGlobe },
     { name: 'Categories', path: '/categories', icon: FaFolder },
     { name: 'Favorites', path: '/favorites', icon: FaStar },
+    { name: 'Users', path: '/users', icon: FaUsers, adminOnly: true },
   ];
 
   const activeStyle = 'bg-primary text-white shadow-md shadow-primary/20';
@@ -97,21 +98,23 @@ const Sidebar = ({ isOpen, onClose }) => {
 
       {/* Navigation Links */}
       <nav className="flex-1 space-y-1">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            onClick={onClose}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                isActive ? activeStyle : inactiveStyle
-              }`
-            }
-          >
-            <item.icon className="text-lg" />
-            <span>{item.name}</span>
-          </NavLink>
-        ))}
+        {navItems
+          .filter((item) => !item.adminOnly || isAdmin)
+          .map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                  isActive ? activeStyle : inactiveStyle
+                }`
+              }
+            >
+              <item.icon className="text-lg" />
+              <span>{item.name}</span>
+            </NavLink>
+          ))}
       </nav>
 
       {/* Bottom Pinned Admin Info & Logout */}
