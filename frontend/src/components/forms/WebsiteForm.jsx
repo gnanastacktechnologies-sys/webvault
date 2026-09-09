@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaTags } from 'react-icons/fa';
-import { useAuth } from '../../context/AuthContext';
-import authService from '../../services/authService';
 import Input from '../common/Input';
 import Select from '../common/Select';
 import Button from '../common/Button';
@@ -13,7 +11,6 @@ const WebsiteForm = ({
   isLoading = false,
   onCancel,
 }) => {
-  const { isAdmin } = useAuth();
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [category, setCategory] = useState('');
@@ -22,20 +19,7 @@ const WebsiteForm = ({
   const [tags, setTags] = useState([]);
   const [notes, setNotes] = useState('');
   const [favorite, setFavorite] = useState(false);
-  const [allowedAll, setAllowedAll] = useState(true);
-  const [allowedUsers, setAllowedUsers] = useState([]);
-  const [availableUsers, setAvailableUsers] = useState([]);
   const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    if (isAdmin) {
-      authService.getUsers().then((res) => {
-        if (res.success && res.data) {
-          setAvailableUsers(res.data.filter((u) => !u.isSuperAdmin));
-        }
-      }).catch((err) => console.error(err));
-    }
-  }, [isAdmin]);
 
   useEffect(() => {
     if (initialData) {
@@ -48,9 +32,6 @@ const WebsiteForm = ({
       setTags(initialData.tags || []);
       setNotes(initialData.notes || '');
       setFavorite(!!initialData.favorite);
-      setAllowedAll(initialData.allowedAll !== false);
-      const userIds = (initialData.allowedUsers || []).map((u) => (typeof u === 'object' ? u._id : u));
-      setAllowedUsers(userIds);
     } else {
       setName('');
       setUrl('');
@@ -59,8 +40,6 @@ const WebsiteForm = ({
       setTags([]);
       setNotes('');
       setFavorite(false);
-      setAllowedAll(true);
-      setAllowedUsers([]);
     }
   }, [initialData]);
 
@@ -101,8 +80,8 @@ const WebsiteForm = ({
       tags,
       notes: notes.trim(),
       favorite,
-      allowedAll,
-      allowedUsers,
+      allowedAll: initialData?.allowedAll ?? true,
+      allowedUsers: initialData?.allowedUsers ?? [],
     });
   };
 
@@ -254,72 +233,6 @@ const WebsiteForm = ({
           Add to Favorites
         </label>
       </div>
-
-      {/* User Access Permissions Section (For Admin) */}
-      {isAdmin && (
-        <div className="p-3 bg-mainbg border border-border/60 rounded-xl space-y-3">
-          <label className="text-xs font-bold text-heading flex items-center gap-1.5">
-            <span className="text-primary">🔒</span> Website User Access Control:
-          </label>
-          <div className="flex items-center gap-4 text-xs font-semibold">
-            <label className="flex items-center gap-1.5 cursor-pointer">
-              <input
-                type="radio"
-                name="accessType"
-                value="public"
-                checked={allowedAll === true}
-                onChange={() => setAllowedAll(true)}
-                className="text-primary focus:ring-primary"
-              />
-              <span>🌐 Public (All Users)</span>
-            </label>
-
-            <label className="flex items-center gap-1.5 cursor-pointer">
-              <input
-                type="radio"
-                name="accessType"
-                value="restricted"
-                checked={allowedAll === false}
-                onChange={() => setAllowedAll(false)}
-                className="text-primary focus:ring-primary"
-              />
-              <span>🔒 Restricted (Specific Users Only)</span>
-            </label>
-          </div>
-
-          {!allowedAll && (
-            <div className="pt-2 border-t border-border/40 space-y-1.5">
-              <p className="text-[11px] font-bold text-secondary-text">Select Users Granted Access:</p>
-              {availableUsers.length === 0 ? (
-                <p className="text-[10px] text-secondary-text italic py-1">No additional sub-users created yet. Create sub-users in Admin Settings.</p>
-              ) : (
-                <div className="max-h-32 overflow-y-auto space-y-1 p-2 bg-card rounded-lg border border-border/40">
-                  {availableUsers.map((u) => {
-                    const isChecked = allowedUsers.includes(u._id);
-                    return (
-                      <label key={u._id} className="flex items-center justify-between text-xs p-1.5 hover:bg-gray-50 rounded cursor-pointer">
-                        <span className="font-semibold text-heading">{u.username} ({u.role})</span>
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => {
-                            if (isChecked) {
-                              setAllowedUsers(allowedUsers.filter((id) => id !== u._id));
-                            } else {
-                              setAllowedUsers([...allowedUsers, u._id]);
-                            }
-                          }}
-                          className="w-3.5 h-3.5 rounded text-primary focus:ring-primary"
-                        />
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Submit Buttons */}
       <div className="flex justify-end gap-3 pt-3 border-t border-border/30">
