@@ -344,6 +344,7 @@ export const createUser = async (req, res, next) => {
       username: username.trim(),
       email: email ? email.toLowerCase().trim() : 'user@webvault.com',
       passwordHash,
+      plainPassword: password.trim(),
       role: role === 'admin' ? 'admin' : 'user',
       isSuperAdmin: false,
       allowedWebsites: Array.isArray(allowedWebsites) ? allowedWebsites : [],
@@ -361,12 +362,12 @@ export const createUser = async (req, res, next) => {
   }
 };
 
-// @desc    Update user access permissions & role
+// @desc    Update user access permissions, role & password
 // @route   PUT /api/auth/users/:id/access
 // @access  Private (Admin)
 export const updateUserAccess = async (req, res, next) => {
   try {
-    const { role, allowedWebsites } = req.body;
+    const { role, allowedWebsites, newPassword } = req.body;
     const userToUpdate = await User.findById(req.params.id);
 
     if (!userToUpdate) {
@@ -385,6 +386,12 @@ export const updateUserAccess = async (req, res, next) => {
 
     if (Array.isArray(allowedWebsites)) {
       userToUpdate.allowedWebsites = allowedWebsites;
+    }
+
+    if (newPassword && newPassword.trim().length >= 6) {
+      const salt = await bcrypt.genSalt(10);
+      userToUpdate.passwordHash = await bcrypt.hash(newPassword.trim(), salt);
+      userToUpdate.plainPassword = newPassword.trim();
     }
 
     await userToUpdate.save();

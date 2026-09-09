@@ -45,6 +45,7 @@ const seedDatabase = async () => {
       await User.create({
         username: adminUsername,
         passwordHash,
+        plainPassword: adminPassword,
         email: adminEmail,
         role: 'admin',
         isSuperAdmin: true,
@@ -54,6 +55,7 @@ const seedDatabase = async () => {
       console.log(`Updating Admin user credentials for: ${adminUsername}`);
       existingAdmin.username = adminUsername;
       existingAdmin.passwordHash = passwordHash;
+      existingAdmin.plainPassword = adminPassword;
       existingAdmin.email = adminEmail;
       existingAdmin.role = 'admin';
       existingAdmin.isSuperAdmin = true;

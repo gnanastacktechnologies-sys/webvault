@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaLock, FaUserPlus, FaTimes, FaUserShield, FaGlobe, FaTrash, FaEdit, FaCheck, FaFolder } from 'react-icons/fa';
+import { FaUser, FaLock, FaUserPlus, FaTimes, FaUserShield, FaGlobe, FaTrash, FaEdit, FaCheck, FaFolder, FaEye, FaEyeSlash, FaCopy, FaUsers, FaKey } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import authService from '../../services/authService';
@@ -33,11 +33,13 @@ const ProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
   const [usersList, setUsersList] = useState([]);
   const [allWebsites, setAllWebsites] = useState([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [visiblePasswords, setVisiblePasswords] = useState({});
 
   // Editing User Access state
   const [editingUserId, setEditingUserId] = useState(null);
   const [editingRole, setEditingRole] = useState('user');
   const [editingWebsites, setEditingWebsites] = useState([]);
+  const [editingResetPassword, setEditingResetPassword] = useState('');
   const [isSavingAccess, setIsSavingAccess] = useState(false);
 
   useEffect(() => {
@@ -161,10 +163,19 @@ const ProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
     }
   };
 
-  // Start editing a user's website access permissions
+  // Toggle password visibility
+  const toggleShowPassword = (userId) => {
+    setVisiblePasswords((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
+  };
+
+  // Start editing a user's website access permissions & password
   const startEditingAccess = (u) => {
     setEditingUserId(u._id);
     setEditingRole(u.role || 'user');
+    setEditingResetPassword('');
     const assignedIds = (u.allowedWebsites || []).map((w) => (typeof w === 'object' ? w._id : w));
     setEditingWebsites(assignedIds);
   };
@@ -173,20 +184,31 @@ const ProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
   const handleSaveUserAccess = async (targetUserId) => {
     setIsSavingAccess(true);
     try {
-      const res = await authService.updateUserAccess(targetUserId, {
+      const payload = {
         role: editingRole,
         allowedWebsites: editingWebsites,
-      });
+      };
+      if (editingResetPassword.trim()) {
+        if (editingResetPassword.trim().length < 6) {
+          error('New password must be at least 6 characters');
+          setIsSavingAccess(false);
+          return;
+        }
+        payload.newPassword = editingResetPassword.trim();
+      }
+
+      const res = await authService.updateUserAccess(targetUserId, payload);
 
       if (res.success) {
-        success(res.message || 'User permissions updated successfully!');
+        success(res.message || 'User permissions & password updated!');
         setEditingUserId(null);
+        setEditingResetPassword('');
         fetchUsersAndWebsites();
       } else {
-        error(res.message || 'Failed to update permissions');
+        error(res.message || 'Failed to update user');
       }
     } catch (err) {
-      error(err.response?.data?.message || 'Failed to update permissions');
+      error(err.response?.data?.message || 'Failed to update user');
     } finally {
       setIsSavingAccess(false);
     }
@@ -373,8 +395,15 @@ const ProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
           {/* TAB 2: USER ACCESS CONTROL (LIST & PERMISSIONS EDITOR) */}
           {activeTab === 'users' && isAdmin && (
             <div className="space-y-4">
-              <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 text-xs text-secondary-text">
-                Manage users and grant specific website access permissions. Restricted users will only see websites assigned to them.
+              <div className="flex items-center justify-between bg-primary/10 border border-primary/25 rounded-xl p-3.5">
+                <div className="flex items-center gap-2 text-primary font-bold text-xs md:text-sm">
+                  <FaUsers size={16} />
+                  <span>Total Users Registered:</span>
+                  <span className="bg-primary text-white px-2 py-0.5 rounded-lg text-xs font-black">
+                    {usersList.length}
+                  </span>
+                </div>
+                <p className="text-[11px] font-semibold text-secondary-text">Admin Control Portal</p>
               </div>
 
               {isLoadingUsers ? (
@@ -411,6 +440,38 @@ const ProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
                                 </span>
                               </div>
                               <p className="text-[10px] text-secondary-text">{u.email}</p>
+
+                              {/* Password Reveal Section for Admin */}
+                              <div className="flex items-center gap-2 mt-1.5">
+                                <span className="text-[10px] text-secondary-text flex items-center gap-1 font-semibold">
+                                  <FaKey size={10} className="text-amber-500" /> Password:
+                                </span>
+                                <span className="text-[11px] font-mono font-bold bg-gray-100 text-heading px-2 py-0.5 rounded border border-border/40">
+                                  {visiblePasswords[u._id] ? (u.plainPassword || (isSuper ? 'Gnana123@' : '******')) : '••••••••'}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleShowPassword(u._id)}
+                                  className="p-1 text-secondary-text hover:text-primary transition-colors text-xs"
+                                  title={visiblePasswords[u._id] ? "Hide password" : "Show password"}
+                                >
+                                  {visiblePasswords[u._id] ? <FaEyeSlash size={13} /> : <FaEye size={13} />}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const pwdToCopy = u.plainPassword || (isSuper ? 'Gnana123@' : '');
+                                    if (pwdToCopy) {
+                                      navigator.clipboard.writeText(pwdToCopy);
+                                      success(`Password copied for ${u.username}!`);
+                                    }
+                                  }}
+                                  className="p-1 text-secondary-text hover:text-primary transition-colors text-xs"
+                                  title="Copy password"
+                                >
+                                  <FaCopy size={11} />
+                                </button>
+                              </div>
                             </div>
                           </div>
 
@@ -437,7 +498,7 @@ const ProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
                         {/* Inline Access Permission Editor */}
                         {isEditing && (
                           <div className="mt-3 pt-3 border-t border-border/40 space-y-3 bg-card p-3 rounded-xl border border-primary/20">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between gap-4">
                               <label className="text-xs font-bold text-heading">User Account Role:</label>
                               <select
                                 value={editingRole}
@@ -447,6 +508,17 @@ const ProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
                                 <option value="user">Restricted User</option>
                                 <option value="admin">Administrator (Full Access)</option>
                               </select>
+                            </div>
+
+                            <div>
+                              <label className="text-xs font-bold text-heading block mb-1">Reset Password (Optional):</label>
+                              <input
+                                type="password"
+                                placeholder="Enter new password to change user password"
+                                value={editingResetPassword}
+                                onChange={(e) => setEditingResetPassword(e.target.value)}
+                                className="w-full text-xs px-2.5 py-1.5 rounded-lg bg-inputbg border border-border focus:outline-none focus:border-primary"
+                              />
                             </div>
 
                             {editingRole === 'user' && (

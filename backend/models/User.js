@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema(
         ref: 'Website',
       },
     ],
+    plainPassword: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,
