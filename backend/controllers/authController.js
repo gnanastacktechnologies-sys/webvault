@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
+import Website from '../models/Website.js';
 import { sendOtpEmail } from '../services/emailService.js';
 
 // @desc    Authenticate admin & get token
@@ -350,6 +351,13 @@ export const createUser = async (req, res, next) => {
       allowedWebsites: Array.isArray(allowedWebsites) ? allowedWebsites : [],
     });
 
+    if (Array.isArray(allowedWebsites) && allowedWebsites.length > 0) {
+      await Website.updateMany(
+        { _id: { $in: allowedWebsites } },
+        { $addToSet: { allowedUsers: newUser._id } }
+      );
+    }
+
     const populatedUser = await User.findById(newUser._id).select('-passwordHash').populate('allowedWebsites', 'name url category');
 
     res.status(201).json({
@@ -385,7 +393,24 @@ export const updateUserAccess = async (req, res, next) => {
     }
 
     if (Array.isArray(allowedWebsites)) {
+      const oldAllowedWebsites = (userToUpdate.allowedWebsites || []).map((id) => id.toString());
       userToUpdate.allowedWebsites = allowedWebsites;
+      const newAllowedWebsites = allowedWebsites.map((id) => id.toString());
+
+      // Add user ID to website.allowedUsers for newly assigned websites
+      await Website.updateMany(
+        { _id: { $in: newAllowedWebsites } },
+        { $addToSet: { allowedUsers: userToUpdate._id } }
+      );
+
+      // Remove user ID from website.allowedUsers for unassigned websites
+      const removedWebsiteIds = oldAllowedWebsites.filter((id) => !newAllowedWebsites.includes(id));
+      if (removedWebsiteIds.length > 0) {
+        await Website.updateMany(
+          { _id: { $in: removedWebsiteIds } },
+          { $pull: { allowedUsers: userToUpdate._id } }
+        );
+      }
     }
 
     if (newPassword && newPassword.trim().length >= 6) {

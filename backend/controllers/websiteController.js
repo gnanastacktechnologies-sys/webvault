@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Website from '../models/Website.js';
 import Category from '../models/Category.js';
+import User from '../models/User.js';
 
 // @desc    Get all websites (paginated, sorted, filtered, searched)
 // @route   GET /api/websites
@@ -213,9 +214,16 @@ export const createWebsite = async (req, res, next) => {
       tags: Array.isArray(tags) ? tags : [],
       notes: notes ? notes.trim() : '',
       favorite: !!favorite,
-      allowedAll: allowedAll !== undefined ? !!allowedAll : true,
+      allowedAll: allowedAll !== undefined ? Boolean(allowedAll) : true,
       allowedUsers: Array.isArray(allowedUsers) ? allowedUsers : [],
     });
+
+    if (Array.isArray(allowedUsers) && allowedUsers.length > 0) {
+      await User.updateMany(
+        { _id: { $in: allowedUsers } },
+        { $addToSet: { allowedWebsites: website._id } }
+      );
+    }
 
     const populatedWebsite = await Website.findById(website._id).populate('category');
 
@@ -274,10 +282,28 @@ export const updateWebsite = async (req, res, next) => {
     if (tags !== undefined) website.tags = Array.isArray(tags) ? tags : [];
     if (notes !== undefined) website.notes = notes.trim();
     if (favorite !== undefined) website.favorite = !!favorite;
-    if (allowedAll !== undefined) website.allowedAll = !!allowedAll;
+    if (allowedAll !== undefined) website.allowedAll = Boolean(allowedAll);
     if (allowedUsers !== undefined) website.allowedUsers = Array.isArray(allowedUsers) ? allowedUsers : [];
 
     await website.save();
+
+    // Sync User collection allowedWebsites with Website allowedUsers
+    if (allowedUsers !== undefined) {
+      const targetUserIds = website.allowedUsers.map((id) => id.toString());
+      
+      // 1. Add website ID to user.allowedWebsites for allowed users
+      await User.updateMany(
+        { _id: { $in: targetUserIds } },
+        { $addToSet: { allowedWebsites: website._id } }
+      );
+
+      // 2. Remove website ID from user.allowedWebsites for users not in allowedUsers list
+      await User.updateMany(
+        { _id: { $nin: targetUserIds } },
+        { $pull: { allowedWebsites: website._id } }
+      );
+    }
+
     const updatedWebsite = await Website.findById(website._id).populate('category');
 
     res.status(200).json({

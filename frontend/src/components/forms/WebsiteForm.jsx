@@ -48,9 +48,19 @@ const WebsiteForm = ({
       setTags(initialData.tags || []);
       setNotes(initialData.notes || '');
       setFavorite(!!initialData.favorite);
-      setAllowedAll(initialData.allowedAll !== undefined ? !!initialData.allowedAll : true);
+      setAllowedAll(initialData.allowedAll !== false);
       const userIds = (initialData.allowedUsers || []).map((u) => (typeof u === 'object' ? u._id : u));
       setAllowedUsers(userIds);
+    } else {
+      setName('');
+      setUrl('');
+      setCategory('');
+      setDescription('');
+      setTags([]);
+      setNotes('');
+      setFavorite(false);
+      setAllowedAll(true);
+      setAllowedUsers([]);
     }
   }, [initialData]);
 
@@ -256,7 +266,8 @@ const WebsiteForm = ({
               <input
                 type="radio"
                 name="accessType"
-                checked={allowedAll}
+                value="public"
+                checked={allowedAll === true}
                 onChange={() => setAllowedAll(true)}
                 className="text-primary focus:ring-primary"
               />
@@ -267,7 +278,8 @@ const WebsiteForm = ({
               <input
                 type="radio"
                 name="accessType"
-                checked={!allowedAll}
+                value="restricted"
+                checked={allowedAll === false}
                 onChange={() => setAllowedAll(false)}
                 className="text-primary focus:ring-primary"
               />
