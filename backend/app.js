@@ -43,11 +43,17 @@ app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/websites', websiteRoutes);
 
-// Root route (for API verification)
-app.get('/', (req, res) => {
+// Root & API base routes (for API health verification)
+app.get(['/', '/api', '/api/'], (req, res) => {
   res.json({
     success: true,
     message: 'WebVault API is running',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      categories: '/api/categories',
+      websites: '/api/websites',
+    },
   });
 });
 
