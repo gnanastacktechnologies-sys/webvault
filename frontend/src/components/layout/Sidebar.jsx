@@ -1,10 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaChartPie, FaGlobe, FaFolder, FaStar, FaUsers, FaSignOutAlt, FaTimes } from 'react-icons/fa';
+import { FaChartPie, FaGlobe, FaFolder, FaStar, FaUserShield, FaUserCog, FaSignOutAlt, FaTimes } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
+import ProfileModal from '../profile/ProfileModal';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { logout, user, isAdmin } = useAuth();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const desktopSidebarRef = useRef(null);
   const mobileSidebarRef = useRef(null);
 
@@ -13,7 +15,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { name: 'Websites', path: '/websites', icon: FaGlobe },
     { name: 'Categories', path: '/categories', icon: FaFolder },
     { name: 'Favorites', path: '/favorites', icon: FaStar },
-    { name: 'Users', path: '/users', icon: FaUsers, adminOnly: true },
+    { name: 'User Access Control', path: '/users', icon: FaUserShield, adminOnly: true },
   ];
 
   const activeStyle = 'bg-primary text-white shadow-md shadow-primary/20';
@@ -115,19 +117,39 @@ const Sidebar = ({ isOpen, onClose }) => {
               <span>{item.name}</span>
             </NavLink>
           ))}
+
+        {/* Admin Profile Link (Placed LAST) */}
+        <button
+          type="button"
+          onClick={() => {
+            setIsProfileModalOpen(true);
+            onClose();
+          }}
+          className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${inactiveStyle}`}
+        >
+          <FaUserCog className="text-lg text-primary" />
+          <span>Admin Profile</span>
+        </button>
       </nav>
 
       {/* Bottom Pinned Admin Info & Logout */}
       <div className="border-t border-border/40 pt-4 mt-auto shrink-0">
-        <div className="flex items-center gap-3 px-2 mb-3">
+        <button
+          type="button"
+          onClick={() => {
+            setIsProfileModalOpen(true);
+            onClose();
+          }}
+          className="w-full flex items-center gap-3 px-2 mb-3 text-left hover:bg-gray-50 p-1.5 rounded-xl transition-colors cursor-pointer"
+        >
           <div className="w-9 h-9 flex items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm uppercase shadow-sm">
             {user?.username?.substring(0, 2) || 'AD'}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-heading truncate">{user?.username || 'Administrator'}</p>
-            <p className="text-[10px] text-secondary-text truncate">Admin Session</p>
+            <p className="text-[10px] text-secondary-text truncate">{isAdmin ? 'Super Admin' : 'User Session'}</p>
           </div>
-        </div>
+        </button>
         <button
           onClick={logout}
           className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-danger hover:bg-red-50 rounded-xl transition-all duration-200"
@@ -172,6 +194,9 @@ const Sidebar = ({ isOpen, onClose }) => {
           </aside>
         </div>
       )}
+
+      {/* Render ProfileModal when user clicks Admin Profile */}
+      <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
     </>
   );
 };
