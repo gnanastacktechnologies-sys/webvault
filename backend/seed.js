@@ -3,22 +3,9 @@ import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import User from './models/User.js';
-import Category from './models/Category.js';
 
 // Load env vars
 dotenv.config();
-
-const defaultCategories = [
-  { name: 'Development', description: 'GitHub, IDEs, and coding docs', icon: 'FaCode', color: '#4F46E5' },
-  { name: 'AI Tools', description: 'LLMs, image generation, and prompt helpers', icon: 'FaBrain', color: '#8B5CF6' },
-  { name: 'Hosting', description: 'Cloud providers, hosting panels, and DNS', icon: 'FaCloud', color: '#06B6D4' },
-  { name: 'Education', description: 'Tutorial sites, e-learning, and research libraries', icon: 'FaGraduationCap', color: '#F59E0B' },
-  { name: 'Government', description: 'Tax portals, identity databases, and civil services', icon: 'FaBuilding', color: '#10B981' },
-  { name: 'Social Media', description: 'Social interaction and community networks', icon: 'FaShareAlt', color: '#EC4899' },
-  { name: 'Finance', description: 'Banking, investments, and tax calculations', icon: 'FaWallet', color: '#10B981' },
-  { name: 'Work', description: 'Corporate workspaces, emails, and project boards', icon: 'FaBriefcase', color: '#3B82F6' },
-  { name: 'Other', description: 'Miscellaneous bookmarks', icon: 'FaEllipsisH', color: '#6B7280' },
-];
 
 const seedDatabase = async () => {
   try {
@@ -63,35 +50,15 @@ const seedDatabase = async () => {
       console.log('Admin user updated successfully.');
     }
 
-    // 2. Seed Default Dummy User for Access Control Testing
-    let dummyUser = await User.findOne({ username: 'User1' });
-    if (!dummyUser) {
-      console.log('Creating Dummy User: User1');
-      const dummyPasswordHash = await bcrypt.hash('User123@', salt);
-      await User.create({
-        username: 'User1',
-        passwordHash: dummyPasswordHash,
-        plainPassword: 'User123@',
-        email: 'user1@webvault.com',
-        role: 'user',
-        isSuperAdmin: false,
-        allowedWebsites: [],
-      });
-      console.log('Dummy user User1 created successfully.');
+    // 2. Delete Dummy User (User1) if present
+    const deleteResult = await User.deleteMany({ username: 'User1' });
+    if (deleteResult.deletedCount > 0) {
+      console.log(`Deleted ${deleteResult.deletedCount} dummy user(s) 'User1'.`);
+    } else {
+      console.log("No dummy user 'User1' found to delete.");
     }
 
-    // 3. Seed Default Categories
-    for (const cat of defaultCategories) {
-      const existingCategory = await Category.findOne({ name: cat.name });
-      if (!existingCategory) {
-        console.log(`Creating Category: ${cat.name}`);
-        await Category.create(cat);
-      } else {
-        console.log(`Category '${cat.name}' already exists. Skipping.`);
-      }
-    }
-
-    console.log('Database seeding completed successfully!');
+    console.log('Database seeding & cleanup completed successfully!');
     mongoose.connection.close();
     process.exit(0);
   } catch (error) {
