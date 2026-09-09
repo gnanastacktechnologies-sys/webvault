@@ -44,6 +44,7 @@ export const Favicon = ({ url, name }) => {
     <img
       src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
       alt={name}
+      loading="lazy"
       onError={() => setImgError(true)}
       className="w-4 h-4 rounded-sm object-contain shrink-0"
     />

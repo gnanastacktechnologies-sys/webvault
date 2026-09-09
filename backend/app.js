@@ -1,12 +1,16 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import authRoutes from './routes/authRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import websiteRoutes from './routes/websiteRoutes.js';
 import { errorHandler } from './middleware/error.js';
 
 const app = express();
+
+// Enable Gzip/Brotli compression for super fast network responses
+app.use(compression());
 
 // Security middlewares
 app.use(helmet());
