@@ -48,58 +48,26 @@ const authService = {
 
   // Create new user account
   createUser: async (userData) => {
-    try {
-      const response = await api.post('/auth/users', userData);
-      return response.data;
-    } catch (err) {
-      if (err.response && err.response.status === 404) {
-        const response = await api.post('/users', userData);
-        return response.data;
-      }
-      throw err;
-    }
+    const response = await api.post('/auth/users', userData);
+    return response.data;
   },
 
   // Get list of all users (Admin only)
   getUsers: async () => {
-    try {
-      const response = await api.get('/auth/users');
-      return response.data;
-    } catch (err) {
-      if (err.response && err.response.status === 404) {
-        const response = await api.get('/users');
-        return response.data;
-      }
-      throw err;
-    }
+    const response = await api.get('/auth/users');
+    return response.data;
   },
 
   // Update user website access & role (Admin only)
   updateUserAccess: async (userId, accessData) => {
-    try {
-      const response = await api.put(`/auth/users/${userId}/access`, accessData);
-      return response.data;
-    } catch (err) {
-      if (err.response && err.response.status === 404) {
-        const response = await api.put(`/users/${userId}/access`, accessData);
-        return response.data;
-      }
-      throw err;
-    }
+    const response = await api.put(`/auth/users/${userId}/access`, accessData);
+    return response.data;
   },
 
   // Delete sub-user account (Admin only)
   deleteUser: async (userId) => {
-    try {
-      const response = await api.delete(`/auth/users/${userId}`);
-      return response.data;
-    } catch (err) {
-      if (err.response && err.response.status === 404) {
-        const response = await api.delete(`/users/${userId}`);
-        return response.data;
-      }
-      throw err;
-    }
+    const response = await api.delete(`/auth/users/${userId}`);
+    return response.data;
   },
 };
 

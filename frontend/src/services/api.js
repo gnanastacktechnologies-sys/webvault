@@ -6,13 +6,32 @@ const getBaseURL = () => {
   if (envUrl) {
     return envUrl;
   }
+
+  if (typeof window !== 'undefined') {
+    const { hostname, origin } = window.location;
+
+    // Always connect to local backend when running locally
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('10.') ||
+      hostname.endsWith('.local')
+    ) {
+      return `http://${hostname}:5000/api`;
+    }
+
+    // When deployed on Render
+    if (origin.includes('onrender.com')) {
+      return '/api';
+    }
+  }
+
   // Production fallback to Render backend
   if (import.meta.env.PROD) {
     return 'https://webvault-0ixp.onrender.com/api';
   }
-  // Local development / mobile LAN fallback
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-  return `http://${hostname}:5000/api`;
+  return 'http://localhost:5000/api';
 };
 
 // Create axios instance
