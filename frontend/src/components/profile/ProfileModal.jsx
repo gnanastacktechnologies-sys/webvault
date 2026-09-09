@@ -61,14 +61,20 @@ const ProfileModal = ({ isOpen, onClose, initialTab = 'profile' }) => {
     setIsLoadingUsers(true);
     try {
       const [usersRes, websitesRes] = await Promise.all([
-        authService.getUsers(),
-        websiteService.getWebsites({ limit: 500 }),
+        authService.getUsers().catch((err) => {
+          console.warn('Users API warning:', err.message);
+          return { success: false, data: [] };
+        }),
+        websiteService.getWebsites({ limit: 500 }).catch((err) => {
+          console.warn('Websites API warning:', err.message);
+          return { success: false, data: [] };
+        }),
       ]);
 
-      if (usersRes.success) {
+      if (usersRes && usersRes.success) {
         setUsersList(usersRes.data || []);
       }
-      if (websitesRes.success) {
+      if (websitesRes && websitesRes.success) {
         setAllWebsites(websitesRes.data || []);
       }
     } catch (err) {

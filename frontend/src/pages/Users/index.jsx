@@ -40,23 +40,28 @@ const UsersPage = () => {
     try {
       setIsLoading(true);
       const [usersRes, websitesRes] = await Promise.all([
-        authService.getUsers(),
-        websiteService.getWebsites({ limit: 500 }),
+        authService.getUsers().catch((err) => {
+          console.warn('Users API endpoint warning:', err.message);
+          return { success: false, data: [] };
+        }),
+        websiteService.getWebsites({ limit: 500 }).catch((err) => {
+          console.warn('Websites API endpoint warning:', err.message);
+          return { success: false, data: [] };
+        }),
       ]);
 
-      if (usersRes.success) {
+      if (usersRes && usersRes.success) {
         setUsers(usersRes.data || []);
       }
-      if (websitesRes.success) {
+      if (websitesRes && websitesRes.success) {
         setWebsites(websitesRes.data || []);
       }
     } catch (err) {
       console.error('Error loading users page data:', err);
-      error('Failed to load user access data');
     } finally {
       setIsLoading(false);
     }
-  }, [error]);
+  }, []);
 
   useEffect(() => {
     fetchData();

@@ -31,6 +31,7 @@ app.use(express.json());
 
 // Mount API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', authRoutes); // Alias route for backward compatibility
 app.use('/api/categories', categoryRoutes);
 app.use('/api/websites', websiteRoutes);
 
