@@ -5,6 +5,8 @@ import compression from 'compression';
 import authRoutes from './routes/authRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import websiteRoutes from './routes/websiteRoutes.js';
+import { getUsers, createUser, updateUserAccess, deleteUser } from './controllers/authController.js';
+import { protect } from './middleware/auth.js';
 import { errorHandler } from './middleware/error.js';
 
 const app = express();
@@ -29,9 +31,15 @@ app.use(cors(corsOptions));
 // Body parser
 app.use(express.json());
 
+// Direct User Access Control route mounts for bulletproof 100% route matching
+app.get('/api/auth/users', protect, getUsers);
+app.post('/api/auth/users', protect, createUser);
+app.put('/api/auth/users/:id/access', protect, updateUserAccess);
+app.delete('/api/auth/users/:id', protect, deleteUser);
+app.get('/api/users', protect, getUsers);
+
 // Mount API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/users', authRoutes); // Alias route for backward compatibility
 app.use('/api/categories', categoryRoutes);
 app.use('/api/websites', websiteRoutes);
 
