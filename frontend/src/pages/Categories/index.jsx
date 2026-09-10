@@ -175,10 +175,10 @@ const Categories = () => {
                 {/* Icon & Title */}
                 <div className="flex items-center justify-between mb-3.5">
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm"
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-105"
                     style={{ backgroundColor: cat.color || '#4F46E5' }}
                   >
-                    <CategoryIcon iconName={cat.icon} size={18} />
+                    <CategoryIcon iconName={cat.icon} size={22} />
                   </div>
                   <span className="bg-slate-100 text-slate-800 text-xs font-black px-2.5 py-1 rounded-lg">
                     {cat.websiteCount} Website{cat.websiteCount === 1 ? '' : 's'}

@@ -374,8 +374,8 @@ const Websites = () => {
     <div className="bg-card border border-border/30 rounded-xl p-4 shadow-sm flex flex-col space-y-3">
       {/* Title, Category & Star */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 min-w-0">
-          <Favicon url={row.url} name={row.name} />
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Favicon url={row.url} name={row.name} size="lg" />
           <div className="min-w-0">
             <h4 className="text-xs font-extrabold text-heading truncate">{row.name}</h4>
             <div className="flex items-center gap-1.5 mt-0.5">

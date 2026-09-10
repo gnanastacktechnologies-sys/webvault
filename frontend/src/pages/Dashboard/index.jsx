@@ -12,6 +12,7 @@ import ErrorState from '../../components/common/ErrorState';
 import Modal from '../../components/common/Modal';
 import CategoryForm from '../../components/forms/CategoryForm';
 import WebsiteForm from '../../components/forms/WebsiteForm';
+import { Favicon } from '../Categories/CategoryDetail';
 
 const Dashboard = () => {
   const { isAdmin } = useAuth();
@@ -279,8 +280,9 @@ const Dashboard = () => {
               {recentWebsites.map((web) => (
                 <div
                   key={web._id}
-                  className="flex items-center justify-between p-3 rounded-xl border border-border/30 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-xl border border-border/30 hover:bg-gray-50 transition-colors gap-3"
                 >
+                  <Favicon url={web.url} name={web.name} size="md" />
                   <div className="min-w-0 flex-1 pr-3">
                     <div className="flex items-center gap-1.5">
                       {web.favorite && <FaStar className="text-amber-400 text-xs shrink-0" />}

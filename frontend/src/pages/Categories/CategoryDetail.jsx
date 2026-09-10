@@ -26,7 +26,7 @@ import ConfirmModal from '../../components/common/ConfirmModal';
 import WebsiteForm from '../../components/forms/WebsiteForm';
 
 // Reusable Favicon Component with Error Fallback
-export const Favicon = ({ url, name }) => {
+export const Favicon = ({ url, name, size = 'md' }) => {
   const [imgError, setImgError] = useState(false);
 
   let hostname = '';
@@ -36,18 +36,28 @@ export const Favicon = ({ url, name }) => {
     // Leave blank
   }
 
+  const dimensions = size === 'lg' ? 'w-10 h-10' : size === 'sm' ? 'w-6 h-6' : 'w-8 h-8';
+  const imgDimensions = size === 'lg' ? 'w-6 h-6' : size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
+  const iconSize = size === 'lg' ? 20 : size === 'sm' ? 14 : 16;
+
   if (imgError || !hostname) {
-    return <FaGlobe className="text-secondary-text shrink-0" size={15} />;
+    return (
+      <div className={`${dimensions} rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs`}>
+        <FaGlobe className="text-secondary-text shrink-0" size={iconSize} />
+      </div>
+    );
   }
 
   return (
-    <img
-      src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
-      alt={name}
-      loading="lazy"
-      onError={() => setImgError(true)}
-      className="w-4 h-4 rounded-sm object-contain shrink-0"
-    />
+    <div className={`${dimensions} rounded-xl bg-white border border-border/60 p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden`}>
+      <img
+        src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`}
+        alt={name}
+        loading="lazy"
+        onError={() => setImgError(true)}
+        className={`${imgDimensions} object-contain shrink-0`}
+      />
+    </div>
   );
 };
 
