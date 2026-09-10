@@ -8,7 +8,7 @@ WebVault is a secure, modern personal website bookmark and URL manager built usi
 ## 🌟 Key Features
 
 * **Single Admin Portal**: Strictly locked administrative access with credential validation. No public sign-ups or registration leaks.
-* **Database Seeding**: One-shot seeding script (`seed.js`) to bootstrap the administrator account and default curated categories.
+* **Database Seeding**: One-shot seeding script (`seed.js`) to bootstrap/update the administrator account (`Gnanasekaran`). Does not seed categories or websites.
 * **Category Management (CRUD)**: Create, read, update, and delete folders with custom icons (React Icons) and curated colors.
 * **Category Safety Triggers**: Prevents accidental bookmark deletions by blocking category deletions if they contain websites.
 * **Website Management (CRUD)**: Create bookmarks with name, validation-checked URLs, tags, multi-line notes, and favorite stars.
@@ -105,7 +105,7 @@ cd backend
 # Install dependencies
 npm install
 
-# Run database seeder (Creates Admin user & default categories)
+# Run database seeder (Seeds Admin user only)
 npm run seed
 ```
 
