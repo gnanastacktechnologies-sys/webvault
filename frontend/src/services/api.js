@@ -2,11 +2,6 @@ import axios from 'axios';
 
 // Determine base URL dynamically based on environment or current window hostname
 const getBaseURL = () => {
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl) {
-    return envUrl;
-  }
-
   if (typeof window !== 'undefined') {
     const { hostname, origin } = window.location;
 
@@ -21,10 +16,15 @@ const getBaseURL = () => {
       return `http://${hostname}:5000/api`;
     }
 
-    // When deployed on Render
+    // When deployed on Render / production static hosting
     if (origin.includes('onrender.com')) {
       return '/api';
     }
+  }
+
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    return envUrl;
   }
 
   // Production fallback to Render backend
