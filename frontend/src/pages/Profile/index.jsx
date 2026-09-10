@@ -110,14 +110,12 @@ const ProfilePage = () => {
         email: email.trim(),
       };
       if (newPassword) {
-        payload.currentPassword = currentPassword;
         payload.newPassword = newPassword;
       }
 
       const res = await updateProfile(payload);
       if (res.success) {
-        success('Profile updated successfully!');
-        setCurrentPassword('');
+        success('Profile & password updated successfully!');
         setNewPassword('');
         setConfirmNewPassword('');
       } else {
@@ -339,16 +337,6 @@ const ProfilePage = () => {
                 <h3 className="text-xs font-extrabold text-heading tracking-wide uppercase">
                   Change Password (Optional)
                 </h3>
-
-                <Input
-                  label="Current Password"
-                  id="currentPassword"
-                  type="password"
-                  placeholder="Enter current password to set a new one"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  disabled={isUpdatingProfile}
-                />
 
                 <Input
                   label="New Password"

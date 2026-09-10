@@ -19,11 +19,9 @@ const Login = () => {
 
   // Forgot Password modal state
   const [showForgotModal, setShowForgotModal] = useState(false);
-  const [forgotStep, setForgotStep] = useState(1); // 1: Request OTP, 2: Verify OTP
-  const [resetEmail, setResetEmail] = useState('');
+  const [resetUsername, setResetUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [otp, setOtp] = useState('');
   const [isResetting, setIsResetting] = useState(false);
   const [modalErrors, setModalErrors] = useState({});
 
@@ -62,11 +60,11 @@ const Login = () => {
     }
   };
 
-  // Step 1: Handle Request OTP
-  const handleRequestOtp = async (e) => {
+  // Direct Password Reset without OTP
+  const handleDirectReset = async (e) => {
     e.preventDefault();
     const errs = {};
-    if (!resetEmail.trim()) errs.email = 'Email address is required';
+    if (!resetUsername.trim()) errs.username = 'Username is required';
     if (!newPassword) errs.newPassword = 'New password is required';
     if (newPassword && newPassword.length < 6) errs.newPassword = 'Password must be at least 6 characters';
     if (newPassword !== confirmPassword) errs.confirmPassword = 'Passwords do not match';
@@ -76,54 +74,23 @@ const Login = () => {
 
     setIsResetting(true);
     try {
-      const res = await authService.requestPasswordResetOtp(
-        resetEmail.trim(),
+      const res = await authService.resetPassword(
+        resetUsername.trim(),
         newPassword,
         confirmPassword
       );
       if (res.success) {
-        success(res.message || 'OTP code sent!');
-        if (res.otp) {
-          setOtp(res.otp);
-        }
-        setForgotStep(2);
-      } else {
-        error(res.message || 'Failed to send OTP email');
-      }
-    } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to request password reset OTP';
-      error(msg);
-    } finally {
-      setIsResetting(false);
-    }
-  };
-
-  // Step 2: Handle Verify OTP
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    if (!otp.trim()) {
-      setModalErrors({ otp: 'Please enter the 6-digit OTP code' });
-      return;
-    }
-
-    setIsResetting(true);
-    try {
-      const res = await authService.verifyPasswordResetOtp(resetEmail.trim(), otp.trim());
-      if (res.success) {
-        success(res.message || 'Password changed successfully!');
-        // Reset state and close modal
+        success(res.message || 'Password updated successfully!');
         setShowForgotModal(false);
-        setForgotStep(1);
-        setResetEmail('');
+        setResetUsername('');
         setNewPassword('');
         setConfirmPassword('');
-        setOtp('');
         setModalErrors({});
       } else {
-        error(res.message || 'OTP verification failed');
+        error(res.message || 'Failed to update password');
       }
     } catch (err) {
-      const msg = err.response?.data?.message || 'OTP verification failed';
+      const msg = err.response?.data?.message || 'Failed to update password';
       error(msg);
     } finally {
       setIsResetting(false);
@@ -132,7 +99,6 @@ const Login = () => {
 
   const closeForgotModal = () => {
     setShowForgotModal(false);
-    setForgotStep(1);
     setModalErrors({});
   };
 
@@ -163,7 +129,7 @@ const Login = () => {
             label="Username"
             id="username"
             type="text"
-            placeholder="Enter admin username"
+            placeholder="Enter username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             error={formErrors.username}
@@ -177,7 +143,7 @@ const Login = () => {
               label="Password"
               id="password"
               type="password"
-              placeholder="Enter admin password"
+              placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               error={formErrors.password}
@@ -189,7 +155,6 @@ const Login = () => {
                 type="button"
                 onClick={() => {
                   setShowForgotModal(true);
-                  setForgotStep(1);
                   setModalErrors({});
                 }}
                 className="text-xs font-medium text-primary hover:text-primary-hover hover:underline transition-colors focus:outline-none"
@@ -215,7 +180,7 @@ const Login = () => {
         {/* Footer Notes */}
         <div className="text-center space-y-1">
           <p className="text-[10px] text-secondary-text font-medium leading-relaxed">
-            Secure admin portal. Unauthorized access is logged.
+            Personal Website Manager. Secure multi-user login.
           </p>
           <p className="text-xs text-secondary-text font-semibold pt-1 border-t border-border/30">
             © 2026 Gnanastack Technologies. All rights reserved.
@@ -223,7 +188,7 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Forgot Password Modal */}
+      {/* Direct Forgot Password Modal (No OTP) */}
       {showForgotModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="max-w-md w-full bg-card border border-border rounded-2xl shadow-2xl p-6 sm:p-8 space-y-5 relative">
@@ -240,120 +205,72 @@ const Login = () => {
             {/* Modal Header */}
             <div className="text-center">
               <h2 className="text-xl font-extrabold text-main-text">
-                {forgotStep === 1 ? 'Reset Admin Password' : 'Verify Email OTP'}
+                Reset Account Password
               </h2>
               <p className="text-xs text-secondary-text mt-1">
-                {forgotStep === 1
-                  ? 'Enter your email address and new password to receive a 6-digit verification code.'
-                  : `Enter the 6-digit OTP sent to ${resetEmail}`}
+                Enter your username and new password to reset your account password.
               </p>
             </div>
 
-            {/* Step 1: Request OTP Form */}
-            {forgotStep === 1 && (
-              <form onSubmit={handleRequestOtp} className="space-y-4">
-                <Input
-                  label="Registered Email"
-                  id="resetEmail"
-                  type="email"
-                  placeholder="admin@webvault.com"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  error={modalErrors.email}
-                  required
+            <form onSubmit={handleDirectReset} className="space-y-4">
+              <Input
+                label="Account Username"
+                id="resetUsername"
+                type="text"
+                placeholder="e.g. Gnanasekaran or username"
+                value={resetUsername}
+                onChange={(e) => setResetUsername(e.target.value)}
+                error={modalErrors.username}
+                required
+                disabled={isResetting}
+                autoFocus
+              />
+
+              <Input
+                label="New Password"
+                id="newPassword"
+                type="password"
+                placeholder="Enter new password (min 6 chars)"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                error={modalErrors.newPassword}
+                required
+                disabled={isResetting}
+              />
+
+              <Input
+                label="Confirm New Password"
+                id="confirmPassword"
+                type="password"
+                placeholder="Re-enter new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                error={modalErrors.confirmPassword}
+                required
+                disabled={isResetting}
+              />
+
+              <div className="pt-2 flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-1/2 py-2 rounded-xl text-xs font-semibold"
+                  onClick={closeForgotModal}
                   disabled={isResetting}
-                  autoFocus
-                />
-
-                <Input
-                  label="New Password"
-                  id="newPassword"
-                  type="password"
-                  placeholder="Enter new password (min 6 chars)"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  error={modalErrors.newPassword}
-                  required
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-1/2 py-2 rounded-xl text-xs font-bold shadow-md shadow-primary/20"
+                  isLoading={isResetting}
                   disabled={isResetting}
-                />
-
-                <Input
-                  label="Confirm New Password"
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Re-enter new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  error={modalErrors.confirmPassword}
-                  required
-                  disabled={isResetting}
-                />
-
-                <div className="pt-2 flex gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-1/2 py-2 rounded-xl text-xs font-semibold"
-                    onClick={closeForgotModal}
-                    disabled={isResetting}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    className="w-1/2 py-2 rounded-xl text-xs font-bold shadow-md shadow-primary/20"
-                    isLoading={isResetting}
-                    disabled={isResetting}
-                  >
-                    Send OTP
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {/* Step 2: Verify OTP Form */}
-            {forgotStep === 2 && (
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <Input
-                  label="6-Digit Verification Code (OTP)"
-                  id="otp"
-                  type="text"
-                  placeholder="e.g. 123456"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  error={modalErrors.otp}
-                  required
-                  maxLength={6}
-                  disabled={isResetting}
-                  autoFocus
-                />
-
-                <div className="pt-2 flex gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-1/2 py-2 rounded-xl text-xs font-semibold"
-                    onClick={() => {
-                      setForgotStep(1);
-                      setModalErrors({});
-                    }}
-                    disabled={isResetting}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    className="w-1/2 py-2 rounded-xl text-xs font-bold shadow-md shadow-primary/20"
-                    isLoading={isResetting}
-                    disabled={isResetting}
-                  >
-                    Verify & Reset
-                  </Button>
-                </div>
-              </form>
-            )}
+                >
+                  Reset Password
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

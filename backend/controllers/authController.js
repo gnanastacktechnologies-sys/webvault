@@ -87,16 +87,19 @@ export const getMe = async (req, res, next) => {
 };
 
 // @desc    Request password reset OTP via Brevo email
+// @desc    Direct password reset without OTP (by username or email)
 // @route   POST /api/auth/forgot-password/request-otp
+// @route   POST /api/auth/forgot-password/reset
 // @access  Public
 export const requestPasswordResetOtp = async (req, res, next) => {
   try {
-    const { email, newPassword, confirmPassword } = req.body;
+    const { username, email, newPassword, confirmPassword } = req.body;
+    const identifier = (username || email || '').trim();
 
-    if (!email || !newPassword || !confirmPassword) {
+    if (!identifier || !newPassword || !confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide email, new password, and confirm password',
+        message: 'Please provide username, new password, and confirm password',
       });
     }
 
@@ -114,110 +117,25 @@ export const requestPasswordResetOtp = async (req, res, next) => {
       });
     }
 
-    // Find admin user (or match by email)
-    let user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      // Single admin portal fallback: find primary admin user
-      user = await User.findOne({ username: process.env.ADMIN_USERNAME || 'admin' });
-      if (!user) {
-        user = await User.findOne({});
-      }
-    }
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User account not found',
-      });
-    }
-
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-    // Hash pending password
-    const salt = await bcrypt.genSalt(10);
-    const pendingHash = await bcrypt.hash(newPassword, salt);
-
-    // Save fields on user document
-    user.email = email.toLowerCase();
-    user.resetOtp = otp;
-    user.resetOtpExpires = otpExpires;
-    user.pendingPasswordHash = pendingHash;
-    await user.save();
-
-    // Dispatch email via Brevo
-    const emailResult = await sendOtpEmail({ toEmail: email, otp });
-
-    const responseMsg = emailResult.success
-      ? `OTP sent successfully to ${email}. Please check your inbox.`
-      : `OTP Code: ${otp} (Brevo Email Blocked: Add your IP to Brevo Authorized IPs)`;
-
-    res.status(200).json({
-      success: true,
-      message: responseMsg,
-      otp: otp,
-      emailSent: emailResult.success,
+    // Find user by username or email
+    let user = await User.findOne({
+      $or: [
+        { username: { $regex: `^${identifier}$`, $options: 'i' } },
+        { email: { $regex: `^${identifier}$`, $options: 'i' } },
+      ],
     });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Verify OTP and finalize password change
-// @route   POST /api/auth/forgot-password/verify-otp
-// @access  Public
-export const verifyPasswordResetOtp = async (req, res, next) => {
-  try {
-    const { email, otp } = req.body;
-
-    if (!email || !otp) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide both email and OTP',
-      });
-    }
-
-    // Find user by email or fallback to admin
-    let user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      user = await User.findOne({ username: process.env.ADMIN_USERNAME || 'admin' });
-      if (!user) {
-        user = await User.findOne({});
-      }
-    }
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User account not found',
+        message: `Account '${identifier}' not found`,
       });
     }
 
-    // Check if OTP matches and is not expired
-    if (!user.resetOtp || user.resetOtp !== otp.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid OTP code. Please check and try again.',
-      });
-    }
-
-    if (!user.resetOtpExpires || new Date() > user.resetOtpExpires) {
-      return res.status(400).json({
-        success: false,
-        message: 'OTP has expired. Please request a new OTP.',
-      });
-    }
-
-    if (!user.pendingPasswordHash) {
-      return res.status(400).json({
-        success: false,
-        message: 'No pending password change request found. Please request a new OTP.',
-      });
-    }
-
-    // Finalize password change
-    user.passwordHash = user.pendingPasswordHash;
+    // Update password directly without requiring OTP
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(newPassword.trim(), salt);
+    user.plainPassword = newPassword.trim();
     user.resetOtp = null;
     user.resetOtpExpires = null;
     user.pendingPasswordHash = null;
@@ -225,19 +143,33 @@ export const verifyPasswordResetOtp = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Password changed successfully! Please log in with your new password.',
+      message: `Password updated successfully for account '${user.username}'! Please log in with your new password.`,
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update profile details & password for logged-in user
+// @desc    Verify OTP and finalize password change (legacy compatibility)
+// @route   POST /api/auth/forgot-password/verify-otp
+// @access  Public
+export const verifyPasswordResetOtp = async (req, res, next) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: 'Password updated directly.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update profile details & password for logged-in user (without requiring current password)
 // @route   PUT /api/auth/profile
 // @access  Private
 export const updateProfile = async (req, res, next) => {
   try {
-    const { username, email, currentPassword, newPassword } = req.body;
+    const { username, email, newPassword } = req.body;
     const user = await User.findById(req.user._id);
 
     if (!user) {
@@ -245,36 +177,21 @@ export const updateProfile = async (req, res, next) => {
     }
 
     // Check if new username is already taken by another user
-    if (username && username !== user.username) {
-      const existingUser = await User.findOne({ username });
-      if (existingUser) {
+    if (username && username.trim() !== user.username) {
+      const existingUser = await User.findOne({ username: username.trim() });
+      if (existingUser && existingUser._id.toString() !== user._id.toString()) {
         return res.status(400).json({ success: false, message: 'Username is already taken' });
       }
-      user.username = username;
+      user.username = username.trim();
     }
 
     if (email) {
-      user.email = email.toLowerCase();
+      user.email = email.toLowerCase().trim();
     }
 
-    // Handle password update if requested
-    if (newPassword) {
-      if (!currentPassword) {
-        return res.status(400).json({
-          success: false,
-          message: 'Please enter your current password to set a new password',
-        });
-      }
-
-      const isMatch = await user.matchPassword(currentPassword);
-      if (!isMatch) {
-        return res.status(400).json({
-          success: false,
-          message: 'Current password is incorrect',
-        });
-      }
-
-      if (newPassword.length < 6) {
+    // Handle direct password update based on username without asking for current password
+    if (newPassword && newPassword.trim()) {
+      if (newPassword.trim().length < 6) {
         return res.status(400).json({
           success: false,
           message: 'New password must be at least 6 characters long',
@@ -282,18 +199,21 @@ export const updateProfile = async (req, res, next) => {
       }
 
       const salt = await bcrypt.genSalt(10);
-      user.passwordHash = await bcrypt.hash(newPassword, salt);
+      user.passwordHash = await bcrypt.hash(newPassword.trim(), salt);
+      user.plainPassword = newPassword.trim();
     }
 
     await user.save();
 
     res.status(200).json({
       success: true,
-      message: 'Profile updated successfully',
+      message: 'Profile & password updated successfully',
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
+        role: user.role,
+        isSuperAdmin: !!user.isSuperAdmin,
       },
     });
   } catch (error) {

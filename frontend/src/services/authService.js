@@ -21,21 +21,22 @@ const authService = {
     localStorage.removeItem('token');
   },
 
-  // Request password reset OTP
-  requestPasswordResetOtp: async (email, newPassword, confirmPassword) => {
+  // Direct password reset by username (without OTP)
+  resetPassword: async (username, newPassword, confirmPassword) => {
     const response = await api.post('/auth/forgot-password/request-otp', {
-      email,
+      username,
       newPassword,
       confirmPassword,
     });
     return response.data;
   },
 
-  // Verify OTP and update password
-  verifyPasswordResetOtp: async (email, otp) => {
-    const response = await api.post('/auth/forgot-password/verify-otp', {
+  // Legacy alias for requestPasswordResetOtp
+  requestPasswordResetOtp: async (email, newPassword, confirmPassword) => {
+    const response = await api.post('/auth/forgot-password/request-otp', {
       email,
-      otp,
+      newPassword,
+      confirmPassword,
     });
     return response.data;
   },
