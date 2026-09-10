@@ -48,7 +48,7 @@ const websiteSchema = new mongoose.Schema(
     },
     allowedAll: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     allowedUsers: [
       {

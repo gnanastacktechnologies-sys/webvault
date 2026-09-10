@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaTimes, FaTags } from 'react-icons/fa';
+import { FaTimes, FaTags, FaUsers, FaLock } from 'react-icons/fa';
+import { useAuth } from '../../context/AuthContext';
+import authService from '../../services/authService';
 import Input from '../common/Input';
 import Select from '../common/Select';
 import Button from '../common/Button';
@@ -11,6 +13,7 @@ const WebsiteForm = ({
   isLoading = false,
   onCancel,
 }) => {
+  const { user: currentUser, isAdmin } = useAuth();
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [category, setCategory] = useState('');
@@ -19,19 +22,41 @@ const WebsiteForm = ({
   const [tags, setTags] = useState([]);
   const [notes, setNotes] = useState('');
   const [favorite, setFavorite] = useState(false);
+  const [allowedAll, setAllowedAll] = useState(false);
+  const [allowedUsers, setAllowedUsers] = useState([]);
+  const [userList, setUserList] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (isAdmin) {
+      setLoadingUsers(true);
+      authService
+        .getUsers()
+        .then((res) => {
+          if (res.success && res.data) {
+            setUserList(res.data);
+          }
+        })
+        .catch((err) => console.warn('Could not load user list:', err.message))
+        .finally(() => setLoadingUsers(false));
+    }
+  }, [isAdmin]);
 
   useEffect(() => {
     if (initialData) {
       setName(initialData.name || '');
       setUrl(initialData.url || '');
-      setCategory(
-        initialData.category?._id || initialData.category || ''
-      );
+      setCategory(initialData.category?._id || initialData.category || '');
       setDescription(initialData.description || '');
       setTags(initialData.tags || []);
       setNotes(initialData.notes || '');
       setFavorite(!!initialData.favorite);
+      setAllowedAll(!!initialData.allowedAll);
+      const userIds = (initialData.allowedUsers || []).map((u) =>
+        typeof u === 'object' ? u._id : u
+      );
+      setAllowedUsers(userIds);
     } else {
       setName('');
       setUrl('');
@@ -40,6 +65,8 @@ const WebsiteForm = ({
       setTags([]);
       setNotes('');
       setFavorite(false);
+      setAllowedAll(false);
+      setAllowedUsers([]);
     }
   }, [initialData]);
 
@@ -51,7 +78,6 @@ const WebsiteForm = ({
     if (!url.trim()) {
       errs.url = 'Website URL is required';
     } else {
-      // Validate http/https format
       try {
         const parsedUrl = new URL(url.trim());
         if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
@@ -80,9 +106,17 @@ const WebsiteForm = ({
       tags,
       notes: notes.trim(),
       favorite,
-      allowedAll: initialData?.allowedAll ?? true,
-      allowedUsers: initialData?.allowedUsers ?? [],
+      allowedAll,
+      allowedUsers,
     });
+  };
+
+  const toggleUserSelection = (userId) => {
+    if (allowedUsers.includes(userId)) {
+      setAllowedUsers(allowedUsers.filter((id) => id !== userId));
+    } else {
+      setAllowedUsers([...allowedUsers, userId]);
+    }
   };
 
   // Add Tag
@@ -180,7 +214,7 @@ const WebsiteForm = ({
             className="w-full px-3 py-2 text-sm bg-inputbg border border-border rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-200"
           />
         </div>
-        
+
         {/* Render tags badges */}
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -210,8 +244,8 @@ const WebsiteForm = ({
         </label>
         <textarea
           id="web-notes"
-          rows={3}
-          placeholder="Optional personal notes, tips or credentials (hashed)"
+          rows={2}
+          placeholder="Optional personal notes, tips or credentials"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           disabled={isLoading}
@@ -233,6 +267,68 @@ const WebsiteForm = ({
           Add to Favorites
         </label>
       </div>
+
+      {/* User Access Controls for Admin */}
+      {isAdmin && (
+        <div className="p-3.5 bg-mainbg border border-border/60 rounded-xl space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-extrabold text-heading flex items-center gap-1.5">
+              <FaLock className="text-primary" size={12} />
+              User Access Control Permissions:
+            </label>
+          </div>
+
+          <label className="flex items-center gap-2 text-xs font-bold text-heading cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={allowedAll}
+              onChange={(e) => setAllowedAll(e.target.checked)}
+              disabled={isLoading}
+              className="h-4 w-4 text-primary focus:ring-primary border-border rounded cursor-pointer"
+            />
+            <span>Allow All Users Access (Global Bookmark)</span>
+          </label>
+
+          {!allowedAll && (
+            <div className="space-y-2 pt-1">
+              <p className="text-[11px] font-bold text-secondary-text">
+                Select Users Granted Access ({allowedUsers.length} selected):
+              </p>
+              {loadingUsers ? (
+                <p className="text-xs text-secondary-text italic">Loading user list...</p>
+              ) : userList.length === 0 ? (
+                <p className="text-xs text-secondary-text">No sub-users registered yet.</p>
+              ) : (
+                <div className="max-h-36 overflow-y-auto space-y-1 p-2 bg-white border border-border/40 rounded-lg">
+                  {userList
+                    .filter((u) => u.role !== 'admin' && !u.isSuperAdmin)
+                    .map((u) => {
+                      const isChecked = allowedUsers.includes(u._id);
+                      return (
+                        <label
+                          key={u._id}
+                          className="flex items-center justify-between p-1.5 rounded text-xs cursor-pointer hover:bg-gray-50"
+                        >
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleUserSelection(u._id)}
+                              disabled={isLoading}
+                              className="h-3.5 w-3.5 text-primary focus:ring-primary border-border rounded cursor-pointer"
+                            />
+                            <span className="font-semibold text-heading">{u.username}</span>
+                          </div>
+                          <span className="text-[10px] text-secondary-text font-mono">{u.email}</span>
+                        </label>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Submit Buttons */}
       <div className="flex justify-end gap-3 pt-3 border-t border-border/30">

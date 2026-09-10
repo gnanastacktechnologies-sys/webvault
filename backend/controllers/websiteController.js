@@ -38,7 +38,7 @@ export const getWebsites = async (req, res, next) => {
       filter.$and = filter.$and || [];
       filter.$and.push({
         $or: [
-          { allowedAll: { $ne: false } },
+          { allowedAll: true },
           { allowedUsers: req.user._id },
           { _id: { $in: userAllowedWebsiteIds } },
         ],
@@ -223,7 +223,7 @@ export const createWebsite = async (req, res, next) => {
       tags: Array.isArray(tags) ? tags : [],
       notes: notes ? notes.trim() : '',
       favorite: !!favorite,
-      allowedAll: parseBoolean(allowedAll, true),
+      allowedAll: parseBoolean(allowedAll, false),
       allowedUsers: Array.isArray(allowedUsers) ? allowedUsers : [],
     });
 
@@ -291,7 +291,7 @@ export const updateWebsite = async (req, res, next) => {
     if (tags !== undefined) website.tags = Array.isArray(tags) ? tags : [];
     if (notes !== undefined) website.notes = notes.trim();
     if (favorite !== undefined) website.favorite = !!favorite;
-    if (allowedAll !== undefined) website.allowedAll = parseBoolean(allowedAll, true);
+    if (allowedAll !== undefined) website.allowedAll = parseBoolean(allowedAll, false);
     if (allowedUsers !== undefined) website.allowedUsers = Array.isArray(allowedUsers) ? allowedUsers : [];
 
     await website.save();

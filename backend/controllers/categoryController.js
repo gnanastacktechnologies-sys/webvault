@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Category from '../models/Category.js';
 import Website from '../models/Website.js';
 
@@ -6,13 +7,36 @@ import Website from '../models/Website.js';
 // @access  Private
 export const getCategories = async (req, res, next) => {
   try {
+    const userRole = req.user?.role || 'user';
+    const isSuperAdmin = !!req.user?.isSuperAdmin;
+
+    const pipelineMatch = {};
+    if (userRole !== 'admin' && !isSuperAdmin) {
+      const userAllowedWebsiteIds = (req.user?.allowedWebsites || []).map((id) =>
+        id instanceof mongoose.Types.ObjectId ? id : new mongoose.Types.ObjectId(id)
+      );
+
+      pipelineMatch.$or = [
+        { allowedAll: true },
+        { allowedUsers: req.user._id },
+        { _id: { $in: userAllowedWebsiteIds } },
+      ];
+    }
+
     // Aggregate to fetch categories along with their associated website count
     const categories = await Category.aggregate([
       {
         $lookup: {
           from: 'websites',
-          localField: '_id',
-          foreignField: 'category',
+          let: { catId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$category', '$$catId'] },
+                ...pipelineMatch,
+              },
+            },
+          ],
           as: 'websites',
         },
       },
@@ -55,8 +79,23 @@ export const getCategory = async (req, res, next) => {
       });
     }
 
-    // Get count of websites
-    const websiteCount = await Website.countDocuments({ category: category._id });
+    const userRole = req.user?.role || 'user';
+    const isSuperAdmin = !!req.user?.isSuperAdmin;
+    const filter = { category: category._id };
+
+    if (userRole !== 'admin' && !isSuperAdmin) {
+      const userAllowedWebsiteIds = (req.user?.allowedWebsites || []).map((id) =>
+        id instanceof mongoose.Types.ObjectId ? id : new mongoose.Types.ObjectId(id)
+      );
+      filter.$or = [
+        { allowedAll: true },
+        { allowedUsers: req.user._id },
+        { _id: { $in: userAllowedWebsiteIds } },
+      ];
+    }
+
+    // Get count of websites accessible to the user
+    const websiteCount = await Website.countDocuments(filter);
 
     res.status(200).json({
       success: true,
