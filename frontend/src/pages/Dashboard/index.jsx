@@ -42,8 +42,19 @@ const Dashboard = () => {
   const fetchDashboardData = useCallback(async () => {
     try {
       setIsError(false);
-      // Fetch categories (contains dynamic websiteCount in each)
-      const catRes = await categoryService.getCategories();
+      
+      // Parallelize API requests with Promise.all to maximize load speed
+      const [catRes, webRes, favRes, recentRes] = await Promise.all([
+        categoryService.getCategories(),
+        websiteService.getWebsites({ limit: 1 }),
+        websiteService.getWebsites({ favorite: true, limit: 1 }),
+        websiteService.getWebsites({
+          limit: 8,
+          sort: 'createdAt',
+          order: 'desc',
+        }),
+      ]);
+
       const categoriesData = catRes.data || [];
 
       // Filter categories containing accessible websites for regular users
@@ -53,20 +64,8 @@ const Dashboard = () => {
 
       setCategories(activeCategories);
 
-      // Fetch total websites (limit 1 to get meta total)
-      const webRes = await websiteService.getWebsites({ limit: 1 });
       const totalWebsites = webRes.total || 0;
-
-      // Fetch favorites (limit 1 to get meta total)
-      const favRes = await websiteService.getWebsites({ favorite: true, limit: 1 });
       const totalFavorites = favRes.total || 0;
-
-      // Fetch recently added websites (limit 8, sorted by date)
-      const recentRes = await websiteService.getWebsites({
-        limit: 8,
-        sort: 'createdAt',
-        order: 'desc',
-      });
       const recentData = recentRes.data || [];
       setRecentWebsites(recentData);
 

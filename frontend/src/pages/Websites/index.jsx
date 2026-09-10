@@ -65,7 +65,7 @@ const Websites = () => {
     }
   }, []);
 
-  // 2. Fetch websites using current search/filter/sort parameters
+  // 2. Fetch page data (categories & websites) in parallel for lightning-fast loads
   const fetchWebsites = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -86,28 +86,30 @@ const Websites = () => {
         params.category = selectedCategory;
       }
 
-      // If we are on the Favorites route, force favorite query.
-      // Otherwise, check the favorite filter state.
       if (isFavoritesRoute || favoriteOnly === 'favorites') {
         params.favorite = 'true';
       }
 
-      const res = await websiteService.getWebsites(params);
-      setWebsites(res.data || []);
-      setTotal(res.total || 0);
-      setPages(res.pages || 0);
+      // Execute categories and websites API calls concurrently
+      const [catRes, webRes] = await Promise.all([
+        categories.length === 0 ? categoryService.getCategories().catch(() => null) : Promise.resolve(null),
+        websiteService.getWebsites(params),
+      ]);
+
+      if (catRes && catRes.data) {
+        setCategories(catRes.data);
+      }
+
+      setWebsites(webRes.data || []);
+      setTotal(webRes.total || 0);
+      setPages(webRes.pages || 0);
     } catch (err) {
       console.error('Error fetching websites:', err);
       setIsError(true);
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, search, selectedCategory, favoriteOnly, sortField, sortOrder, isFavoritesRoute]);
-
-  // Sync state on mount and update
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+  }, [page, limit, search, selectedCategory, favoriteOnly, sortField, sortOrder, isFavoritesRoute, categories.length]);
 
   // Sync search input with URL search parameters from global search bar
   useEffect(() => {

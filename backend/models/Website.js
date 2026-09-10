@@ -68,6 +68,8 @@ websiteSchema.index({ name: 1 });
 websiteSchema.index({ category: 1 });
 websiteSchema.index({ favorite: 1 });
 websiteSchema.index({ createdAt: -1 });
+websiteSchema.index({ allowedAll: 1, allowedUsers: 1 });
+websiteSchema.index({ category: 1, favorite: 1, createdAt: -1 });
 
 const Website = mongoose.model('Website', websiteSchema);
 

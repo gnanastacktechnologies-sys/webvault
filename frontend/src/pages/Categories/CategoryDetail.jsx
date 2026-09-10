@@ -25,10 +25,11 @@ import Modal from '../../components/common/Modal';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import WebsiteForm from '../../components/forms/WebsiteForm';
 
-// Reusable Favicon Component with Error Fallback
-export const Favicon = ({ url, name, size = 'md' }) => {
-  const [imgError, setImgError] = useState(false);
+// In-memory global cache for failed favicon domains to prevent redundant network retries
+const failedFaviconDomains = new Set();
 
+// Reusable Favicon Component with Error Fallback & Async Decoding
+export const Favicon = ({ url, name, size = 'md' }) => {
   let hostname = '';
   try {
     hostname = new URL(url).hostname;
@@ -36,9 +37,18 @@ export const Favicon = ({ url, name, size = 'md' }) => {
     // Leave blank
   }
 
+  const [imgError, setImgError] = useState(() => !hostname || failedFaviconDomains.has(hostname));
+
   const dimensions = size === 'lg' ? 'w-10 h-10' : size === 'sm' ? 'w-6 h-6' : 'w-8 h-8';
   const imgDimensions = size === 'lg' ? 'w-6 h-6' : size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
   const iconSize = size === 'lg' ? 20 : size === 'sm' ? 14 : 16;
+
+  const handleImageError = () => {
+    if (hostname) {
+      failedFaviconDomains.add(hostname);
+    }
+    setImgError(true);
+  };
 
   if (imgError || !hostname) {
     return (
@@ -54,7 +64,9 @@ export const Favicon = ({ url, name, size = 'md' }) => {
         src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`}
         alt={name}
         loading="lazy"
-        onError={() => setImgError(true)}
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onError={handleImageError}
         className={`${imgDimensions} object-contain shrink-0`}
       />
     </div>
@@ -121,21 +133,26 @@ const CategoryDetail = () => {
         params.favorite = 'true';
       }
 
-      const res = await websiteService.getWebsites(params);
-      setWebsites(res.data || []);
-      setTotal(res.total || 0);
-      setPages(res.pages || 0);
+      // Fetch category metadata and websites concurrently if category not loaded yet
+      const [catRes, webRes] = await Promise.all([
+        category ? Promise.resolve(null) : categoryService.getCategory(id).catch(() => null),
+        websiteService.getWebsites(params),
+      ]);
+
+      if (catRes && catRes.data) {
+        setCategory(catRes.data);
+      }
+
+      setWebsites(webRes.data || []);
+      setTotal(webRes.total || 0);
+      setPages(webRes.pages || 0);
     } catch (err) {
       console.error('Error fetching websites:', err);
       setIsError(true);
     } finally {
       setIsLoading(false);
     }
-  }, [id, page, limit, search, sortField, sortOrder, favoriteOnly]);
-
-  useEffect(() => {
-    fetchCategoryDetails();
-  }, [fetchCategoryDetails]);
+  }, [id, page, limit, search, sortField, sortOrder, favoriteOnly, category]);
 
   useEffect(() => {
     fetchWebsites();
