@@ -478,7 +478,7 @@ const ProfilePage = () => {
 
                         {/* Inline Access Permission Editor */}
                         {isEditing && (
-                          <div className="mt-3 pt-3 border-t border-border/40 space-y-4 bg-card p-4 rounded-xl border border-primary/20">
+                          <div className="mt-3 pt-3 space-y-4 bg-card p-4 rounded-xl border border-primary/20">
                             <div className="flex items-center justify-between gap-4 flex-wrap">
                               <label className="text-xs font-bold text-heading">User Account Role:</label>
                               <select
