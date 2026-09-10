@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import app from './app.js';
+import { startKeepAlive } from './services/keepAliveService.js';
 
 // Load environment variables
 dotenv.config();
@@ -12,6 +13,9 @@ const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  
+  // Start 24/7 Keep-Alive self-ping service
+  startKeepAlive();
 });
 
 // Handle unhandled promise rejections
