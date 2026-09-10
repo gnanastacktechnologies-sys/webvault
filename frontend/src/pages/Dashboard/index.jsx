@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaGlobe, FaFolder, FaStar, FaClock, FaPlus, FaExternalLinkAlt } from 'react-icons/fa';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, CartesianGrid } from 'recharts';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import categoryService from '../../services/categoryService';
 import websiteService from '../../services/websiteService';
@@ -13,6 +14,7 @@ import CategoryForm from '../../components/forms/CategoryForm';
 import WebsiteForm from '../../components/forms/WebsiteForm';
 
 const Dashboard = () => {
+  const { isAdmin } = useAuth();
   const { success, error } = useToast();
   const navigate = useNavigate();
 
@@ -42,7 +44,13 @@ const Dashboard = () => {
       // Fetch categories (contains dynamic websiteCount in each)
       const catRes = await categoryService.getCategories();
       const categoriesData = catRes.data || [];
-      setCategories(categoriesData);
+
+      // Filter categories containing accessible websites for regular users
+      const activeCategories = isAdmin
+        ? categoriesData
+        : categoriesData.filter((cat) => (cat.websiteCount || 0) > 0);
+
+      setCategories(activeCategories);
 
       // Fetch total websites (limit 1 to get meta total)
       const webRes = await websiteService.getWebsites({ limit: 1 });
@@ -64,13 +72,13 @@ const Dashboard = () => {
       // Set stats object
       setStats({
         totalWebsites,
-        totalCategories: categoriesData.length,
+        totalCategories: activeCategories.length,
         totalFavorites,
         recentCount: recentData.length,
       });
 
       // Prepare category distribution chart data (only categories with > 0 websites)
-      const dist = categoriesData
+      const dist = activeCategories
         .map((cat) => ({
           name: cat.name,
           websites: cat.websiteCount || 0,
@@ -84,7 +92,7 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     fetchDashboardData();

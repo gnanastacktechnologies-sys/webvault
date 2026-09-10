@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as Icons from 'react-icons/fa';
 import { FaPlus, FaEdit, FaTrashAlt, FaFolderOpen, FaArrowRight } from 'react-icons/fa';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import categoryService from '../../services/categoryService';
 import Button from '../../components/common/Button';
@@ -19,6 +20,7 @@ export const CategoryIcon = ({ iconName, className = '', size = 16 }) => {
 };
 
 const Categories = () => {
+  const { isAdmin } = useAuth();
   const navigate = useNavigate();
   const { success, error, warning } = useToast();
 
@@ -40,14 +42,18 @@ const Categories = () => {
     try {
       setIsError(false);
       const res = await categoryService.getCategories();
-      setCategories(res.data || []);
+      const rawCategories = res.data || [];
+      const filteredCategories = isAdmin
+        ? rawCategories
+        : rawCategories.filter((cat) => (cat.websiteCount || 0) > 0);
+      setCategories(filteredCategories);
     } catch (err) {
       console.error('Error fetching categories:', err);
       setIsError(true);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     fetchCategories();
