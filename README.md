@@ -75,7 +75,7 @@ webvault/
 Create a `.env` file in the `backend/` directory using the following keys:
 | Variable | Description | Example |
 | :--- | :--- | :--- |
-| `PORT` | Local port the Express API listens on. | `5000` |
+| `PORT` | Local port the Express API listens on. | `17201` |
 | `MONGODB_URI` | Connection string for MongoDB database instance. | `mongodb://127.0.0.1:27017/webvault` |
 | `JWT_SECRET` | Secret key used to sign and verify authorization tokens. | `some_secure_secret_hash_key` |
 | `CLIENT_URL` | Frontend URL allowed to bypass CORS policies. | `http://localhost:5173` |
@@ -87,7 +87,7 @@ Create a `.env` file in the `backend/` directory using the following keys:
 Create a `.env` file in the `frontend/` directory:
 | Variable | Description | Example |
 | :--- | :--- | :--- |
-| `VITE_API_URL` | Base endpoint URL of the Express backend API. | `http://localhost:5000/api` |
+| `VITE_API_URL` | Base endpoint URL of the Express backend API. | `http://localhost:17201/api` |
 
 ---
 
@@ -114,7 +114,7 @@ npm run seed
 # Start backend server in development mode (using nodemon)
 npm run dev
 ```
-The server will connect and listen at `http://localhost:5000`.
+The server will connect and listen at `http://localhost:17201`.
 
 ### 4. Running Frontend Client
 Open a new terminal window in the root directory:

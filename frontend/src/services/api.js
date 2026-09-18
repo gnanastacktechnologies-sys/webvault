@@ -13,7 +13,7 @@ const getBaseURL = () => {
       hostname.startsWith('10.') ||
       hostname.endsWith('.local')
     ) {
-      return `http://${hostname}:5000/api`;
+      return `http://${hostname}:17201/api`;
     }
 
     // When deployed on Render / production static hosting
@@ -31,7 +31,7 @@ const getBaseURL = () => {
   if (import.meta.env.PROD) {
     return 'https://webvault-0ixp.onrender.com/api';
   }
-  return 'http://localhost:5000/api';
+  return 'http://localhost:17201/api';
 };
 
 // Create axios instance
