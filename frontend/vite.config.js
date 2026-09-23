@@ -5,6 +5,8 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react()],
   build: {
+    outDir: '../dist',
+    emptyOutDir: true,
     target: 'esnext',
     cssCodeSplit: true,
     chunkSizeWarningLimit: 1200,
@@ -25,3 +27,4 @@ export default defineConfig({
     },
   },
 });
+
