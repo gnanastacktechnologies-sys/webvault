@@ -5,11 +5,9 @@
   "main": "backend/server.js",
   "type": "module",
   "scripts": {
-    "postinstall": "cd backend && npm install && cd ../frontend && npm install",
+    "postinstall": "cd backend && npm install",
     "install-backend": "cd backend && npm install",
-    "start": "cd backend && node server.js",
-    "build": "cd frontend && npm run build && node ../scripts/postbuild.js",
-    "vercel-build": "cd frontend && npm run build && node ../scripts/postbuild.js"
+    "start": "cd backend && node server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
