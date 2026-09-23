@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build && node -e \"import('fs').then(fs => { const routes=['login','dashboard','categories','websites','favorites','users','profile']; fs.cpSync('dist', 'public', {recursive: true}); fs.copyFileSync('dist/index.html', 'dist/404.html'); fs.copyFileSync('dist/index.html', 'public/404.html'); for(const r of routes){ fs.mkdirSync('dist/'+r, {recursive:true}); fs.mkdirSync('public/'+r, {recursive:true}); fs.copyFileSync('dist/index.html', 'dist/'+r+'/index.html'); fs.copyFileSync('dist/index.html', 'public/'+r+'/index.html'); } })\"",
+    "vercel-build": "npm run build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
