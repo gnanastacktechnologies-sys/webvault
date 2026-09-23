@@ -1,12 +1,7 @@
 import mongoose from 'mongoose';
 import dns from 'dns';
 
-// Set public DNS resolvers for reliable MongoDB Atlas SRV record resolution
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1']);
-} catch (e) {
-  // Ignore if custom DNS server override is restricted in serverless env
-}
+
 
 let isConnected = false;
 
