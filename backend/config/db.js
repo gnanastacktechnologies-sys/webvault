@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import dns from 'dns';
 
-
+// Disable Mongoose command buffering globally so queries fail fast with exact DB connection errors
+mongoose.set('bufferCommands', false);
 
 let isConnected = false;
 
@@ -9,11 +9,6 @@ const connectDB = async () => {
   if (isConnected || mongoose.connection.readyState >= 1) {
     isConnected = true;
     return;
-  }
-
-  // Disable Mongoose command buffering in serverless mode to fail fast on DB connection errors
-  if (process.env.VERCEL) {
-    mongoose.set('bufferCommands', false);
   }
 
   const atlasUri = 'mongodb+srv://gnanastacktechnologies_db_user:leO9igKbda93gS4r@cluster0.rbdpeb4.mongodb.net/webvault?retryWrites=true&w=majority';
