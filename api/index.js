@@ -1,14 +1,18 @@
-import app from '../backend/app.js';
+import mongoose from 'mongoose';
+// Disable Mongoose command buffering globally BEFORE schemas/models are compiled
+mongoose.set('bufferCommands', false);
+
 import connectDB from '../backend/config/db.js';
+import app from '../backend/app.js';
 
 export default async function handler(req, res) {
   try {
     await connectDB();
   } catch (error) {
-    console.error('Database connection error in Vercel Serverless Handler:', error.message);
+    console.error('Database Connection Failed in Vercel Handler:', error.message);
     return res.status(500).json({
       success: false,
-      message: `Database Connection Failed: ${error.message}. Please check MongoDB Atlas IP Whitelist (allow 0.0.0.0/0) and MONGODB_URI.`,
+      message: `Database connection failed (${error.message}). Please ensure 0.0.0.0/0 (Allow Access from Anywhere) is whitelisted in MongoDB Atlas Network Access.`,
     });
   }
   return app(req, res);
