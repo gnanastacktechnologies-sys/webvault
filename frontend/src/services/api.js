@@ -27,9 +27,9 @@ const getBaseURL = () => {
     return envUrl;
   }
 
-  // Production fallback to Render backend
+  // Production fallback to Vercel backend
   if (import.meta.env.PROD) {
-    return 'https://webvault-0ixp.onrender.com/api';
+    return 'https://webvault-2qkh.vercel.app/api';
   }
   return 'http://localhost:17201/api';
 };
