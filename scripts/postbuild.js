@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const copyDir = (src, dest) => {
+  if (src === dest) return;
   fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
     const srcPath = path.join(src, entry.name);
@@ -17,8 +18,12 @@ const copyDir = (src, dest) => {
 const routes = ['login', 'dashboard', 'categories', 'websites', 'favorites', 'users', 'profile'];
 
 try {
-  let frontendDist = path.resolve('frontend/dist');
-  if (!fs.existsSync(frontendDist) && fs.existsSync(path.resolve('dist'))) {
+  let frontendDist;
+  if (fs.existsSync(path.resolve('frontend/dist'))) {
+    frontendDist = path.resolve('frontend/dist');
+  } else if (fs.existsSync(path.resolve('dist'))) {
+    frontendDist = path.resolve('dist');
+  } else {
     frontendDist = path.resolve('dist');
   }
 
@@ -39,8 +44,13 @@ try {
       }
     }
 
-    const rootDir = fs.existsSync(path.resolve('frontend')) ? path.resolve('.') : path.resolve('..');
+    // Determine project root directory
+    const rootDir = fs.existsSync(path.resolve('backend'))
+      ? path.resolve('.')
+      : path.resolve('..');
+
     copyDir(frontendDist, path.join(rootDir, 'dist'));
+    copyDir(frontendDist, path.join(rootDir, 'frontend/dist'));
     copyDir(frontendDist, path.join(rootDir, 'public'));
     console.log('✅ Successfully generated static route entry points & synced assets for Vercel');
   } else {
@@ -49,3 +59,4 @@ try {
 } catch (e) {
   console.error('Postbuild copy warning:', e.message);
 }
+
